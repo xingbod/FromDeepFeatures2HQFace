@@ -1,0 +1,5 @@
+.vscode/*
+checkpoints/arc_res50
+logs/*
+**/__pycache__/*
+**/*.tfrecord
