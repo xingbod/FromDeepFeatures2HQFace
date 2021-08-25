@@ -27,28 +27,34 @@ if ckpt_path is not None:
     arcfacemodel.load_weights(ckpt_path)
 
 
+strategy = tf.distribute.MirroredStrategy()
+
+
 class myModel(tf.keras.Model):
-    def __init__(self):
-        super().__init__()
-        # self.flatten = tf.keras.layers.Flatten(input_shape=(None, 1, 512))
-        self.dense1 = tf.keras.layers.Dense(units=512, activation=tf.nn.relu)
-        self.dense2 = tf.keras.layers.Dense(units=512, activation=tf.nn.relu)
-        self.dense3 = tf.keras.layers.Dense(units=512, activation=tf.nn.relu)
-        self.dense4 = tf.keras.layers.Dense(units=512, activation=tf.nn.relu)
-        self.dense5 = tf.keras.layers.Dense(units=512)
+    with strategy.scope():
+        def __init__(self):
+            super().__init__()
+            # self.flatten = tf.keras.layers.Flatten(input_shape=(None, 1, 512))
+            self.dense1 = tf.keras.layers.Dense(units=512, activation=tf.nn.relu)
+            self.dense2 = tf.keras.layers.Dense(units=1024, activation=tf.nn.relu)
+            self.dense3 = tf.keras.layers.Dense(units=1024, activation=tf.nn.relu)
+            self.dense4 = tf.keras.layers.Dense(units=1024, activation=tf.nn.relu)
+            self.dense5 = tf.keras.layers.Dense(units=1024, activation=tf.nn.relu)
+            self.dense6 = tf.keras.layers.Dense(units=512)
 
-    def call(self, inputs):
-        x = self.dense1(inputs)
-        x = self.dense2(x)
-        x = self.dense3(x)
-        x = self.dense4(x)
-        output = self.dense5(x)
-        return output
+        def call(self, inputs):
+            x = self.dense1(inputs)
+            x = self.dense2(x)
+            x = self.dense3(x)
+            x = self.dense4(x)
+            x = self.dense5(x)
+            output = self.dense6(x)
+            return output
 
 
-num_epochs = 500
+num_epochs = 200
 batch_size = 50
-learning_rate = 0.001
+learning_rate = 0.0001
 model = myModel()
 optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
@@ -65,8 +71,8 @@ def train(ckpt_dir, use_custom_cuda, out_fn):
     for epoch in range(num_epochs):
         # seed = np.random.randint()
         rnd = np.random.RandomState()
-        latents = rnd.randn(6, g_clone.z_dim)
-        labels = rnd.randn(6, g_clone.labels_dim)
+        latents = rnd.randn(32, g_clone.z_dim)
+        labels = rnd.randn(32, g_clone.labels_dim)
         latents = latents.astype(np.float32)
         labels = labels.astype(np.float32)
         image_out = g_clone([latents, labels], training=False, truncation_psi=0.5)
@@ -78,22 +84,22 @@ def train(ckpt_dir, use_custom_cuda, out_fn):
         # latents
         with tf.GradientTape() as tape:
             z_pred = model(feature)
-            image_out_pred = g_clone([z_pred, labels], training=False, truncation_psi=0.5)
-            image_out_pred = postprocess_images(image_out_pred)
-            image_out_pred = tf.image.resize(image_out_pred, size=(112, 112))
-            image_out_pred = image_out_pred.numpy()
-            feature_pred = arcfacemodel(image_out_pred)
+            # image_out_pred = g_clone([z_pred, labels], training=False, truncation_psi=0.5)
+            # image_out_pred = postprocess_images(image_out_pred)
+            # image_out_pred = tf.image.resize(image_out_pred, size=(112, 112))
+            # image_out_pred = image_out_pred.numpy()
+            # feature_pred = arcfacemodel(image_out_pred)
             loss1 = losses.mse(y_true=latents, y_pred=z_pred)
             loss1 = tf.reduce_mean(loss1)
-            loss2 = losses.mse(image_out, image_out_pred)
-            loss2 = tf.reduce_mean(loss2)
-            loss3 = losses.mse(feature, feature_pred)
-            loss3 = tf.reduce_mean(loss3)
-            loss = loss1 + 0.01*loss2 + loss3
-            loss = tf.reduce_mean(loss)
-            # print("epoch %d: loss %f" % (epoch, loss.numpy()))
-            print("epoch %d: loss %f, loss1 %f, loss2 %f, loss3 %f" % (epoch, loss.numpy(), loss1.numpy(), loss2.numpy(), loss3.numpy()))
-        grads = tape.gradient(loss, model.variables)
+            # loss2 = losses.mse(image_out, image_out_pred)
+            # loss2 = tf.reduce_mean(loss2)
+            # loss3 = losses.mse(feature, feature_pred)
+            # loss3 = tf.reduce_mean(loss3)
+            # loss = loss1 + 0.01*loss2 + loss3
+            # loss = tf.reduce_mean(loss)
+            print("epoch %d: loss %f" % (epoch, loss1.numpy()))
+            # print("epoch %d: loss %f, loss1 %f, loss2 %f, loss3 %f" % (epoch, loss.numpy(), loss1.numpy(), loss2.numpy(), loss3.numpy()))
+        grads = tape.gradient(loss1, model.variables)
 
         optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
 
