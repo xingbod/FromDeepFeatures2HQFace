@@ -52,11 +52,6 @@ class myModel(tf.keras.Model):
             return output
 
 
-num_epochs = 200
-batch_size = 50
-learning_rate = 0.0001
-model = myModel()
-optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
 
 
@@ -66,42 +61,6 @@ ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 ckpt_dir_ref = os.path.join(ckpt_dir_base, 'ref')
 
 
-def train(ckpt_dir, use_custom_cuda, out_fn):
-    g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir, custom_cuda=use_custom_cuda)
-    for epoch in range(num_epochs):
-        # seed = np.random.randint()
-        rnd = np.random.RandomState()
-        latents = rnd.randn(32, g_clone.z_dim)
-        labels = rnd.randn(32, g_clone.labels_dim)
-        latents = latents.astype(np.float32)
-        labels = labels.astype(np.float32)
-        image_out = g_clone([latents, labels], training=False, truncation_psi=0.5)
-        image_out = postprocess_images(image_out)
-        image_out = tf.image.resize(image_out, size=(112, 112))
-        image_out = image_out.numpy()
-        feature = arcfacemodel(image_out)
-
-        # latents
-        with tf.GradientTape() as tape:
-            z_pred = model(feature)
-            # image_out_pred = g_clone([z_pred, labels], training=False, truncation_psi=0.5)
-            # image_out_pred = postprocess_images(image_out_pred)
-            # image_out_pred = tf.image.resize(image_out_pred, size=(112, 112))
-            # image_out_pred = image_out_pred.numpy()
-            # feature_pred = arcfacemodel(image_out_pred)
-            loss1 = losses.mse(y_true=latents, y_pred=z_pred)
-            loss1 = tf.reduce_mean(loss1)
-            # loss2 = losses.mse(image_out, image_out_pred)
-            # loss2 = tf.reduce_mean(loss2)
-            # loss3 = losses.mse(feature, feature_pred)
-            # loss3 = tf.reduce_mean(loss3)
-            # loss = loss1 + 0.01*loss2 + loss3
-            # loss = tf.reduce_mean(loss)
-            print("epoch %d: loss %f" % (epoch, loss1.numpy()))
-            # print("epoch %d: loss %f, loss1 %f, loss2 %f, loss3 %f" % (epoch, loss.numpy(), loss1.numpy(), loss2.numpy(), loss3.numpy()))
-        grads = tape.gradient(loss1, model.variables)
-
-        optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
 
 
 def z2xTest():
@@ -132,7 +91,7 @@ def z2xTest():
 
 
 if __name__ == '__main__':
-    train(ckpt_dir_cuda, use_custom_cuda=False, out_fn='from-cuda-to-ref.png')
+    model = tf.saved_model.load('./models')
     z2xTest()
 
 
