@@ -68,22 +68,20 @@ def z2xTest():
     # seed = np.random.randint()
     rnd = np.random.RandomState()
     latents = rnd.randn(1, g_clone.z_dim)
-    labels1 = rnd.randn(1, g_clone.labels_dim)
+    print(latents)
     latents = latents.astype(np.float32)
     # print(latents)
-    labels1 = labels1.astype(np.float32)
-    image_out1 = g_clone([latents, labels1], training=False, truncation_psi=0.5)
+    image_out1 = g_clone([latents, []], training=False, truncation_psi=0.5)
     image_out1 = postprocess_images(image_out1)
     dimage_out1 = tf.image.resize(image_out1, size=(112, 112))
     image_out1 = image_out1.numpy()
     Image.fromarray(image_out1[0], 'RGB').save('image_out1.png')
     feature = arcfacemodel(dimage_out1)
     new_z = model(feature)
-    # print(new_z)
+    print(new_z)
     # new_z = new_z.astype(np.float32)
-    labels2 = rnd.randn(1, g_clone.labels_dim)
-    labels2 = labels2.astype(np.float32)
-    image_out2 = g_clone([new_z, labels2], training=False, truncation_psi=0.5)
+
+    image_out2 = g_clone([new_z, []], training=False, truncation_psi=0.5)
     image_out2 = postprocess_images(image_out2)
     # image_out2 = tf.image.resize(image_out2, size=(112, 112))
     image_out2 = image_out2.numpy()
@@ -91,7 +89,7 @@ def z2xTest():
 
 
 if __name__ == '__main__':
-    model = tf.saved_model.load('./models')
+    model = tf.saved_model.load('./models/step2000')
     z2xTest()
 
 
