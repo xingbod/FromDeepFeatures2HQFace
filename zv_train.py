@@ -28,7 +28,7 @@ learning_rate = 0.00001
 with strategy.scope():
   # Set reduction to `none` so we can do the reduction afterwards and divide by
   # global batch size.
-  loss_object = tf.keras.losses.KLDivergence()
+  loss_object = tf.keras.losses.KLDivergence(reduction=tf.keras.losses.Reduction.NONE)
   def compute_loss(labels, predictions):
     per_example_loss = loss_object(labels, predictions)
     return tf.nn.compute_average_loss(per_example_loss, global_batch_size=GLOBAL_BATCH_SIZE)
@@ -58,10 +58,12 @@ def train_step(inputs):
 
 # `run` replicates the provided computation and runs it
 # with the distributed input.
+
 @tf.function
-def distributed_train_step(dataset_inputs):
-  per_replica_losses = strategy.run(train_step, args=(dataset_inputs,))
-  return  tf.reduce_sum(per_replica_losses,) * (1. / GLOBAL_BATCH_SIZE)
+def distributed_train_step(dist_inputs):
+  per_replica_losses = strategy.run(train_step, args=(dist_inputs,))
+  return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses,
+                         axis=None)
 
 EPOCHS = 10000
 for epoch in range(EPOCHS):
