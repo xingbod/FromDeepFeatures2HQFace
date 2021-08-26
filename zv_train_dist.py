@@ -16,18 +16,17 @@ from ModelZoo import createModel
 # from arcface_tf2.modules.models import ArcFaceModel
 # from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 # from zv_reverse import myModel
-strategy = tf.distribute.MirroredStrategy()
+# strategy = tf.distribute.MirroredStrategy()
 
 num_epochs = 100000
-batch_size = 4
-GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
+batch_size = 32
+# GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
 
 learning_rate = 0.00001
 
-with strategy.scope():
-    model = createModel()
-    print(model.summary())
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+model = createModel()
+print(model.summary())
+optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
 
 for epoch in range(num_epochs):
@@ -35,7 +34,7 @@ for epoch in range(num_epochs):
     with tf.GradientTape() as tape:
         # seed = np.random.randint()
         rnd = np.random.RandomState()
-        latents = rnd.randn(GLOBAL_BATCH_SIZE, 512)
+        latents = rnd.randn(batch_size, 512)
 
         latents = tf.cast(latents, dtype=tf.float64)
 
