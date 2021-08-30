@@ -54,6 +54,9 @@ def createModel():
 
     new_latent = reg_model(feature)
 
+    # 0827 xingbo add residual as the obj
+    new_latent = new_latent + inputs_latents
+
     model = Model(inputs=[inputs_latents], outputs=[image_out, feature, new_latent])
     return model
 
