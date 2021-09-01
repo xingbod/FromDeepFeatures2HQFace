@@ -10,7 +10,7 @@ from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
 
@@ -62,6 +62,7 @@ ckpt_dir_ref = os.path.join(ckpt_dir_base, 'ref')
 
 def z2xTest():
     g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
+    g_clone.summary()
     # seed = np.random.randint()
     for i in range(50):
         rnd = np.random.RandomState()
@@ -90,5 +91,5 @@ def z2xTest():
 
 
 if __name__ == '__main__':
-    model = tf.saved_model.load('./models/step298000')
+    model = tf.saved_model.load('./models3/step110000')
     z2xTest()

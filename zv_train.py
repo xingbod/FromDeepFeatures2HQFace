@@ -12,13 +12,13 @@ from zv_reverse import myModel
 
 num_epochs = 300000
 batch_size = 4
-learning_rate = 0.00001
+learning_rate = 0.000001
 
 # model = myModel()
-model = tf.saved_model.load('./models/step298000')
+model = tf.saved_model.load('./models3/step110000')
 optimizer = tf.keras.optimizers.Adam(learning_rate)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
 
@@ -82,5 +82,5 @@ for epoch in range(num_epochs):
     optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
 
     if epoch % 2000 == 0:
-        save_path = os.path.join('./models2', f'step{epoch}')
+        save_path = os.path.join('./models4', f'step{epoch}')
         tf.saved_model.save(model, save_path)
