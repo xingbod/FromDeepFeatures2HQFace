@@ -57,5 +57,31 @@ def createModel():
     model = Model(inputs=[inputs_latents], outputs=[image_out, feature, new_latent])
     return model
 
+
+def loadFaceModel():
+    cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+    arcfacemodel = ArcFaceModel(size=cfg['input_size'],
+                                backbone_type=cfg['backbone_type'],
+                                training=False)
+
+    ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
+    print("***********", ckpt_path)
+    if ckpt_path is not None:
+        print("[*] load ckpt from {}".format(ckpt_path))
+        arcfacemodel.load_weights(ckpt_path)
+
+    arcfacemodel.trainable = False
+    return arcfacemodel
+
+
+def loadStyleGAN2Model():
+    ckpt_dir_base = './official-converted'
+    ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
+
+    g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
+    g_clone.trainable = False
+
+    return g_clone
+
 # model = createModel()
 # print(model.summary())
