@@ -62,7 +62,7 @@ def minObj(x):
     x = x.reshape(1,512)
     feature_new,_ = model(x)
     loss = tf.losses.mse(y, feature_new)
-    # print(loss)
+    print(loss)
     return loss
 
 res = minimize(minObj, inp, method='nelder-mead',
