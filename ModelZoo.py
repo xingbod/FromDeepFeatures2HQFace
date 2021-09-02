@@ -158,7 +158,7 @@ def loadFaceModel():
                                 training=False)
 
     ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
-    print("***********", ckpt_path)
+    print("****ckpt_path*******", ckpt_path)
     if ckpt_path is not None:
         print("[*] load ckpt from {}".format(ckpt_path))
         arcfacemodel.load_weights(ckpt_path)

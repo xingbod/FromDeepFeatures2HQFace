@@ -21,14 +21,10 @@ from scipy.optimize import minimize
 
 num_epochs = 1000
 batch_size = 32
-# GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
 
 learning_rate = 0.00001
 
 arcfacemodel = loadFaceModel()
-# g_clone = loadStyleGAN2Model()
-# optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-
 
 # 1st step, extract features from the images based on arcface model
 input_dir = "data/imgs"
@@ -53,16 +49,20 @@ feat_gt = feat_gt_orig[0]
 batch_size = 1
 
 y = tf.constant(feat_gt)
-inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
-# print(inp)
+# inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
+inp = np.random.normal(size=(1, 512))
+print(inp.shape)
 model = createlatent2featureModel()
+# model = loadFaceModel()
 # model.trainable = True
 # model = mytestModel()
 print(model.summary())
 
-def minObj(inp):
-    feature_new, imgs = model(inp)
+def minObj(x):
+    x = x.reshape(1,512)
+    feature_new,_ = model(x)
     loss = tf.losses.mse(y, feature_new)
+    # print(loss)
     return loss
 
 res = minimize(minObj, inp, method='nelder-mead',
