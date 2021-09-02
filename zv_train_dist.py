@@ -4,19 +4,10 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3, 4, 5'
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
-
-
 import tensorflow as tf
-from tensorflow import keras
 from tensorflow.keras import Model, optimizers, layers, losses
-from PIL import Image
-from stylegan2.utils import postprocess_images
+
 from ModelZoo import createModel
-# from load_models import load_generator
-# from arcface_tf2.modules.models import ArcFaceModel
-# from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
-# from zv_reverse import myModel
-# strategy = tf.distribute.MirroredStrategy()
 
 num_epochs = 100000
 batch_size = 32
@@ -52,9 +43,7 @@ for epoch in range(num_epochs):
 
         loss3 = tf.reduce_mean(losses.cosine_similarity(feature, new_feature))
         # loss3 = tf.reduce_mean(loss3)
-        # print(loss1)
-        # print(loss2)
-        # print(loss3)
+
         latents = tf.cast(latents, dtype=tf.float64)
 
         loss = tf.cast(loss1, dtype=tf.float64)  + tf.cast(loss1_2, dtype=tf.float64)  + 0.01*tf.cast(loss2, dtype=tf.float64) + tf.cast(loss3, dtype=tf.float64)
