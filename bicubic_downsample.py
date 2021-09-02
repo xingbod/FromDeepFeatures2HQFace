@@ -48,14 +48,14 @@ def apply_bicubic_downsample(x, filter, factor):
   return x
 
 
-
-# from bicubic_downsample import build_filter, apply_bicubic_downsample
-
-# First, create the bicubic kernel. This can be reused in multiple downsample operations
-k = build_filter(factor=9)
-x = tf.Variable(np.random.normal(size=(1,1024,1024,3)), dtype=tf.float32)
-print(x.shape)
-# Downsample x which is a tensor with shape [N, H, W, 3]
-y = apply_bicubic_downsample(x, filter=k, factor=9)
-print(y[:,:-1,:-1,:])
-# y now contains x downsampled to [N, H/4, W/4, 3]
+#
+# # from bicubic_downsample import build_filter, apply_bicubic_downsample
+#
+# # First, create the bicubic kernel. This can be reused in multiple downsample operations
+# k = build_filter(factor=9)
+# x = tf.Variable(np.random.normal(size=(1,1024,1024,3)), dtype=tf.float32)
+# print(x.shape)
+# # Downsample x which is a tensor with shape [N, H, W, 3]
+# y = apply_bicubic_downsample(x, filter=k, factor=9)
+# print(y[:,:-1,:-1,:])
+# # y now contains x downsampled to [N, H/4, W/4, 3]
