@@ -137,7 +137,7 @@ def createlatent2featureModel():
 
     image_out = postprocess_images(image_out)
 
-    image_out = tf.cast(image_out,, dtype=tf.float64)
+    image_out = tf.cast(image_out, dtype=tf.float64)
     # First, create the bicubic kernel. This can be reused in multiple downsample operations
     k = build_filter(factor=9)
 
