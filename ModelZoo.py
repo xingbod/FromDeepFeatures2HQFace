@@ -137,17 +137,16 @@ def createlatent2featureModel():
 
     image_out = postprocess_images(image_out)
 
-
+    image_out = tf.cast(image_out,, dtype=tf.float64)
     # First, create the bicubic kernel. This can be reused in multiple downsample operations
     k = build_filter(factor=9)
 
     # Downsample x which is a tensor with shape [N, H, W, 3]
     y = apply_bicubic_downsample(image_out, filter=k, factor=9)
-    print(y[:, :-1, :-1, :])
+    # print(y[:, :-1, :-1, :])
     # y now contains x downsampled to [N, H/4, W/4, 3]
     # image_out = tf.image.resize(image_out, size=(112, 112))
-    image_out = y[:, :-1, :-1, :]
-    feature = arcfacemodel(image_out)
+    feature = arcfacemodel(y[:, :-1, :-1, :])
 
     model = Model(inputs=[inputs_latents], outputs=[feature, image_out])
     return model
