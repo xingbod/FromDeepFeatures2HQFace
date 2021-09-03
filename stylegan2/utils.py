@@ -56,7 +56,7 @@ def preprocess_fit_train_image(images, res):
 def postprocess_images(images):
     images = adjust_dynamic_range(images, range_in=(-1.0, 1.0), range_out=(0.0, 255.0), out_dtype=tf.dtypes.float32)
     images = tf.transpose(images, [0, 2, 3, 1])
-    images = tf.cast(images, dtype=tf.dtypes.uint8)
+    # images = tf.cast(images, dtype=tf.dtypes.uint8)
     return images
 
 
