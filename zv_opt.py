@@ -64,9 +64,9 @@ def minObj(x):
     loss = tf.losses.mse(y, feature_new)
     print(loss)
     return loss
-
+# 170
 res = minimize(minObj, inp, method='nelder-mead',
-               options={'xatol': 1e-8, 'disp': True})
+               options={'xatol': 1e-3, 'disp': True})
 
 
 print(res.x)

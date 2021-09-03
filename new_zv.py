@@ -6,21 +6,9 @@ import logging
 logging.disable(30)# for disable the warnning in gradient tape
 from skimage import io
 from skimage.transform import rescale, resize, downscale_local_mean
-
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import Model
-from tensorflow.keras.layers import Input, Dropout, BatchNormalization, LeakyReLU, concatenate
+from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel, mytestModel, createTestModel,createlatent2featureModelfake
 
-from tensorflow.keras import Model, optimizers, layers, losses
-from PIL import Image
-from stylegan2.utils import postprocess_images
-from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel, mytestModel, createTestModel
-# from load_models import load_generator
-# from arcface_tf2.modules.models import ArcFaceModel
-# from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
-# from zv_reverse import myModel
-# strategy = tf.distribute.MirroredStrategy()
 
 num_epochs = 1000
 batch_size = 32
@@ -73,7 +61,7 @@ y = tf.constant(feat_gt)
 inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
 # print(inp)
 optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
-model = createlatent2featureModel()
+model = createlatent2featureModelfake()
 # model.trainable = True
 # model = mytestModel()
 print(model.summary())

@@ -7,9 +7,8 @@ from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 from tensorflow.keras import Model
-from tensorflow.keras.layers import Input, Dropout, BatchNormalization, LeakyReLU, concatenate
+from tensorflow.keras.layers import Input, Dropout, BatchNormalization, LeakyReLU, concatenate,Dense,Flatten
 from bicubic_downsample import build_filter, apply_bicubic_downsample
-
 
 def regressionModel():
     inputs = Input((512))
@@ -136,6 +135,43 @@ def createlatent2featureModel():
     image_out = g_clone([inputs_latents, []], training=False, truncation_psi=0.5)
 
     image_out = postprocess_images(image_out)
+
+    image_out = tf.cast(image_out, dtype=tf.float32)
+    # First, create the bicubic kernel. This can be reused in multiple downsample operations
+    k = build_filter(factor=9)
+
+    # Downsample x which is a tensor with shape [N, H, W, 3]
+    y = apply_bicubic_downsample(image_out, filter=k, factor=9)
+    # print(y[:, :-1, :-1, :])
+    # y now contains x downsampled to [N, H/4, W/4, 3]
+    # image_out = tf.image.resize(image_out, size=(112, 112))
+    feature = arcfacemodel(y[:, :-1, :-1, :])
+
+    model = Model(inputs=[inputs_latents], outputs=[feature, image_out])
+    return model
+
+
+def createlatent2featureModelfake():
+    cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+    arcfacemodel = ArcFaceModel(size=cfg['input_size'],
+                                backbone_type=cfg['backbone_type'],
+                                training=False)
+
+    ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
+    print("***********", ckpt_path)
+    if ckpt_path is not None:
+        print("[*] load ckpt from {}".format(ckpt_path))
+        arcfacemodel.load_weights(ckpt_path)
+
+    arcfacemodel.trainable = True
+
+
+    inputs_latents = Input((512))
+
+    x = Dense(512)(inputs_latents)
+    x = Dense(1024*1024*3)(x)
+    image_out = tf.keras.layers.Reshape((-1,1024, 1024,3))(x)
+
 
     image_out = tf.cast(image_out, dtype=tf.float32)
     # First, create the bicubic kernel. This can be reused in multiple downsample operations
