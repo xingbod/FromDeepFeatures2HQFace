@@ -225,7 +225,7 @@ def loadStyleGAN2Model():
 
 def laten2featureFinalModel():
     arcfacemodel = loadFaceModel()
-    g_clone = load_generator()
+    g_clone = loadStyleGAN2Model()
     inputs_latents = Input((g_clone.z_dim))
     image_out = g_clone([inputs_latents, []], training=False, truncation_psi=0.5)
     image_out_1 = postprocess_images(image_out)

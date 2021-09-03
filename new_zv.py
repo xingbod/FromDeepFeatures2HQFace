@@ -7,8 +7,10 @@ logging.disable(30)# for disable the warnning in gradient tape
 from skimage import io
 from skimage.transform import rescale, resize, downscale_local_mean
 import tensorflow as tf
+from tensorflow.keras import Model, optimizers, layers, losses
 from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel
 from PIL import Image
+from stylegan2.utils import postprocess_images
 
 num_epochs = 1000
 batch_size = 32
@@ -65,13 +67,12 @@ model = laten2featureFinalModel()
 # model.trainable = True
 # model = mytestModel()
 print(model.summary())
-for i in range(20):
+for i in range(400):
     with tf.GradientTape(watch_accessed_variables=False) as tape:
         tape.watch(inp)
-        clipping_mask = tf.math.logical_or(inp > 1,
-                                           inp < -1)
-        clipped_values = tf.where(clipping_mask, tf.random.normal(shape=inp.shape),
-                                  inp)
+        print(np.linalg.norm(inp))
+        clipping_mask = tf.math.logical_or(inp > 1, inp < -1)
+        clipped_values = tf.where(clipping_mask, tf.random.normal(shape=inp.shape), inp)
         stochastic_clip_op = tf.compat.v1.assign(inp, clipped_values)
         feature_new, image_out= model(stochastic_clip_op)
         # image_out = g_clone([inp, []], training=False,
@@ -80,15 +81,19 @@ for i in range(20):
         # dimage_out = tf.image.resize(img_out,
         #                              size=(112, 112))
         # feature_new = arcfacemodel(dimage_out)
+        feature_distance = tf.reduce_mean(losses.cosine_similarity(y, feature_new)).numpy()
+        # print(feature_distance)
         image_out = tf.cast(image_out, dtype=tf.dtypes.uint8)
         image_out = image_out.numpy()
+        # image_out = image_out / 255
+        # print(image_out)
         Image.fromarray(image_out[0], 'RGB').save(
-            'data/image_out_' + str(i) + '.png')
+            'data/test2/out_' + str(i) +'_' + str(feature_distance) + '.png')
         # print(feature_new.shape)
         # print(y.shape)
         loss = tf.losses.mse(y, feature_new)
         print("epoch %d: loss %f"% (i, loss))
-        print(inp)
+        # print(inp)
 
     grads = tape.gradient(loss, [inp])    # 使用 model.variables 这一属性直接获得模型中的所有变量
     # print(grads)
