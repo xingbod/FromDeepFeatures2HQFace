@@ -70,11 +70,11 @@ print(model.summary())
 for i in range(400):
     with tf.GradientTape(watch_accessed_variables=False) as tape:
         tape.watch(inp)
-        print(np.linalg.norm(inp))
+        # print(np.linalg.norm(inp))
         clipping_mask = tf.math.logical_or(inp > 1, inp < -1)
         clipped_values = tf.where(clipping_mask, tf.random.normal(shape=inp.shape), inp)
-        stochastic_clip_op = tf.compat.v1.assign(inp, clipped_values)
-        feature_new, image_out= model(stochastic_clip_op)
+        inp = tf.compat.v1.assign(inp, clipped_values)
+        feature_new, image_out = model(inp)
         # image_out = g_clone([inp, []], training=False,
         #                     truncation_psi=0.5)
         # img_out = postprocess_images(image_out)
@@ -98,6 +98,9 @@ for i in range(400):
     grads = tape.gradient(loss, [inp])    # 使用 model.variables 这一属性直接获得模型中的所有变量
     # print(grads)
     optimizer.apply_gradients(grads_and_vars=zip(grads, [inp]))
+    tmp = inp + tf.random.normal(shape=(1, 512), dtype=tf.float32) * 0.01
+    inp = tf.compat.v1.assign(inp, tmp)
+
 # print(inp)
 # print(model.variables)
 
