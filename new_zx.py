@@ -8,7 +8,7 @@ from skimage import io
 from skimage.transform import rescale, resize, downscale_local_mean
 import tensorflow as tf
 from tensorflow.keras import Model, optimizers, layers, losses
-from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel
+from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2XFinalModel
 from PIL import Image
 from stylegan2.utils import postprocess_images
 
@@ -17,33 +17,6 @@ batch_size = 32
 # GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
 
 learning_rate = 0.001
-
-arcfacemodel = loadFaceModel()
-# g_clone = loadStyleGAN2Model()
-# optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-
-
-# 1st step, extract features from the images based on arcface model
-input_dir = "data/imgs"
-input_img_paths = sorted(
-    [
-        os.path.join(input_dir, fname)
-        for fname in os.listdir(input_dir)
-        if fname.endswith(".png")
-    ]
-)
-
-imgs =[]
-for j, path in enumerate(input_img_paths):
-    img = io.imread(path)
-    img = resize(img,
-           (112,112),
-           anti_aliasing=True)
-    imgs.append(np.array(img))
-imgs = np.array(imgs)
-feat_gt_orig = arcfacemodel(imgs)
-feat_gt = feat_gt_orig[0]
-batch_size = 1
 
 # def createMobdel():
 #     inputs = Input((512))# feature
@@ -59,48 +32,55 @@ batch_size = 1
 #     return model
 
 
-y = tf.constant(feat_gt)
-inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
 # print(inp)
-optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
-model = laten2featureFinalModel()
+optimizer = tf.keras.optimizers.SGD(learning_rate=0.001)
+model = laten2XFinalModel()
 # model.trainable = True
 # model = mytestModel()
 print(model.summary())
-for i in range(50000):
+
+# 1 st
+ranom_fix_z = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
+print('ranom_fix_z GT',ranom_fix_z)
+image_out_gt = model(ranom_fix_z)
+gt_img = tf.cast(image_out_gt, dtype=tf.dtypes.uint8)
+gt_img = gt_img.numpy()
+# image_out = image_out / 255
+# print(image_out)
+Image.fromarray(gt_img[0], 'RGB').save(
+    'data/test6/GT_out.png')
+
+inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
+for i in range(400):
     with tf.GradientTape(watch_accessed_variables=False) as tape:
         tape.watch(inp)
         # print(np.linalg.norm(inp))
-        clipping_mask = tf.math.logical_or(inp > 2, inp < -2)
+        clipping_mask = tf.math.logical_or(inp > 1.5, inp < -0.25)
         clipped_values = tf.where(clipping_mask, tf.random.normal(shape=inp.shape), inp)
         inp = tf.compat.v1.assign(inp, clipped_values)
-        feature_new, image_out = model(inp)
+        image_out = model(inp)
         # image_out = g_clone([inp, []], training=False,
         #                     truncation_psi=0.5)
         # img_out = postprocess_images(image_out)
         # dimage_out = tf.image.resize(img_out,
         #                              size=(112, 112))
         # feature_new = arcfacemodel(dimage_out)
-        feature_distance = tf.reduce_mean(losses.cosine_similarity(y, feature_new)).numpy()
         # print(feature_distance)
-        image_out = tf.cast(image_out, dtype=tf.dtypes.uint8)
-        image_out = image_out.numpy()
+        image_out_convert = tf.cast(image_out, dtype=tf.dtypes.uint8)
+        image_out_convert = image_out_convert.numpy()
         # image_out = image_out / 255
         # print(image_out)
-        if i % 5 == 0:
-            Image.fromarray(image_out[0], 'RGB').save(
-                'data/test5/out_' + str(i) + '.png')
+        Image.fromarray(image_out_convert[0], 'RGB').save(
+            'data/test6/out_' + str(i) +'_' + '.png')
         # print(feature_new.shape)
         # print(y.shape)
-        loss = tf.losses.mse(y, feature_new)
+        loss = tf.reduce_mean(tf.losses.mse(image_out, image_out_gt))
         print("epoch %d: loss %f"% (i, loss))
         # print(inp)
 
     grads = tape.gradient(loss, [inp])    # 使用 model.variables 这一属性直接获得模型中的所有变量
     # print(grads)
     optimizer.apply_gradients(grads_and_vars=zip(grads, [inp]))
-    # tmp = inp + tf.random.normal(shape=(1, 512), dtype=tf.float32) * 0.001
-    # inp = tf.compat.v1.assign(inp, tmp)
 
 # print(inp)
 # print(model.variables)

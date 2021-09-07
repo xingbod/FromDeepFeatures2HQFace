@@ -228,10 +228,23 @@ def laten2featureFinalModel():
     g_clone = loadStyleGAN2Model()
     inputs_latents = Input((g_clone.z_dim))
     image_out = g_clone([inputs_latents, []], training=False, truncation_psi=0.5)
-    image_out_1 = postprocess_images(image_out)
-    image_out = tf.image.resize(image_out_1, size=(112, 112))
-    feature = arcfacemodel(image_out)
-    model = Model(inputs=[inputs_latents], outputs=[feature, image_out_1])
+    image_out_post = postprocess_images(image_out)
+    # image_out_1 = tf.image.random_flip_left_right(image_out_post)
+    # image_out_1 = tf.image.random_brightness(image_out_1,50)
+    # image_out_1 = tf.image.random_contrast(image_out_1,0.2,1.5)
+    image_out = tf.image.resize(image_out_post, size=(112, 112))
+    feature = arcfacemodel(image_out/255.)
+    model = Model(inputs=[inputs_latents], outputs=[feature, image_out_post])
+    return model
+
+
+def laten2XFinalModel():
+    g_clone = loadStyleGAN2Model()
+    inputs_latents = Input((g_clone.z_dim))
+    image_out = g_clone([inputs_latents, []], training=False, truncation_psi=0.5)
+    image_out_post = postprocess_images(image_out)
+
+    model = Model(inputs=[inputs_latents], outputs=[image_out_post])
     return model
 
 
