@@ -27,7 +27,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -121,12 +121,18 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 
 # Run through generations
+loss_history = np.zeros(generations)
+loss_history[0] = 9
 for i in range(generations):
     # Create cross-over matrices for plugging in.
     crossover_mat = np.ones(shape=[num_children, features])
     crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)
+    crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)
     for pop_ix in range(num_children):
-        crossover_mat[pop_ix, 0:crossover_point[pop_ix]] = 0.
+        # crossover_mat[pop_ix, 0:crossover_point[pop_ix]] = 0.
+        # xingbo added extra crossover point, span between crossover_point  crossover_point2 assign 0
+        crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.
+        crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
     # Generate mutation probability matrices
     mutation_prob_mat = np.random.uniform(size=[num_children, features])
     mutation_values = np.random.normal(size=[num_children, features])
@@ -145,9 +151,17 @@ for i in range(generations):
     # if i % 5 == 0:
     Image.fromarray(image_out, 'RGB').save(
             'data/test13/out_' + str(i) + '.png')
+    tau = 0.6
+    tau_bond = 0.2
+    # pay attention to fitness neg.
+    loss_history[i+1] = tf.reduce_mean(-fitness).numpy()
+    # ********-0.2*****0******0.2********
+    # *************************1.0********
+    mutation = 3/pop_size + (tf.reduce_mean(-fitness) - tau)/pop_size
+    mutation = mutation.numpy() * 2
     if i % 5 == 0:
         best_fit = tf.reduce_min(fitness)
-        print('Generation: {}, Best Fitness (lowest MSE): {:.2}'.format(i, -best_fit))
+        print('Generation: {},mutation rate: {}, Best Fitness (lowest MSE): {:.2}'.format(i,mutation, -best_fit))
 
 # plt.plot(truth, label="True Values")
 # plt.plot(np.squeeze(best_individual_val), label="Best Individual")

@@ -52,6 +52,7 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Gather parents by shuffled indices, expand back out to pop_size too
     rand_parent1 = tf.gather(parents, rand_parent1_ix)
     rand_parent2 = tf.gather(parents, rand_parent2_ix)
+    # cross over of the individul
     rand_parent1_sel = tf.multiply(rand_parent1, crossover_mat_ph)
     rand_parent2_sel = tf.multiply(rand_parent2, tf.subtract(1., crossover_mat_ph))
     children_after_sel = tf.add(rand_parent1_sel, rand_parent2_sel)
@@ -65,20 +66,19 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     return population,best_individual,best_val,fitness,best_img
 
 
-for i in range(6):
-    selection = 0.1 + (i / 10)  # 筛选前20
-    for j in range(6):
+for s in range(4):
+    selection = 0.1 + (s / 10)  # 筛选前20
+    for m in range(5):
         # Genetic Algorithm Parameters
         pop_size = 36  # 种群大小
         features = 512  # 个体大小
-        selection = 0.1  # 筛选前20
-        mutation = (1. + j) / pop_size
+        mutation = (1. + m) / pop_size
         generations = 1000
         num_parents = int(pop_size * selection)
         num_children = pop_size - num_parents
 
 
-        the_img_savepath = f"./data/auto_test/selection_{i+1}_mutation_{j+1}"
+        the_img_savepath = f"./data/auto_test3/selection_{s+1}_mutation_{m+1}"
         os.mkdir(the_img_savepath)
         dirs_name = os.listdir(f"./data/stylegan_data_10_exam")  # 人名文件夹列表
         for name in dirs_name:
@@ -91,6 +91,8 @@ for i in range(6):
             img_name = img_name_list[0]
             img_path = os.path.join(dir_path, img_name)
             img = io.imread(img_path)
+            img_gt = np.array(img)
+            Image.fromarray(img_gt, 'RGB').save(img_final_path + r'/gt_' + name + '.png')
             img = resize(img, (112, 112), anti_aliasing=True)
             img = np.array(img)
             img = np.expand_dims(img, 0)
@@ -109,8 +111,12 @@ for i in range(6):
                 # Create cross-over matrices for plugging in.
                 crossover_mat = np.ones(shape=[num_children, features])
                 crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)
+                crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)
                 for pop_ix in range(num_children):
-                    crossover_mat[pop_ix, 0:crossover_point[pop_ix]] = 0.
+                    # crossover_mat[pop_ix, 0:crossover_point[pop_ix]] = 0.
+                    # xingbo added extra crossover point, span between crossover_point  crossover_point2 assign 0
+                    crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.
+                    crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
                 # Generate mutation probability matrices
                 mutation_prob_mat = np.random.uniform(size=[num_children, features])
                 mutation_values = np.random.normal(size=[num_children, features])
@@ -128,6 +134,12 @@ for i in range(6):
                 # image_out = image_out / 255
                 # print(image_out)
                 # if i % 5 == 0:
+
+                # 计算图片相似度（余弦距离）
+                dot = np.sum(np.multiply(img_gt, image_out), axis=1)
+                norm = np.linalg.norm(img_gt, axis=1) * np.linalg.norm(image_out, axis=1)
+                dist = dot / norm
+
                 best_fit = tf.reduce_min(fitness)
 
                 while (i == 0):
@@ -138,7 +150,7 @@ for i in range(6):
                 print('Generation: {}, Best Fitness (lowest MSE): {:.4}'.format(i, -best_fit))
                 if i % 5 == 0:
                     Image.fromarray(image_out, 'RGB').save(
-                        img_final_path + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
+                        img_final_path + r'/Imageout' + str(i) + "_" + str(dist) + str(format(best_fit_numpy, '.2f')) + '.png')
                 new_fit = -best_fit
                 if new_fit >= pre_fit:
                     num = num + 1
