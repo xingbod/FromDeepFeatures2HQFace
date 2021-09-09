@@ -39,7 +39,8 @@ from PIL import Image
 
 
 # Genetic Algorithm Parameters
-pop_size = 32      # 种群大小
+big_batch_size = 10
+pop_size = 32 * big_batch_size     # 种群大小
 features = 512      # 个体大小
 selection = 0.2     # 筛选前20
 mutation = 1. / pop_size
@@ -84,7 +85,11 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Calculate fitness (MSE)
     # population -> v
     # print("xxxx*******1",population)
-    feature_new, image_out = model(population)
+    feature_new = np.zeros(pop_size,512)
+    image_out = np.zeros(pop_size,1024,1024,3)
+    for batch in range(big_batch_size):
+        feature_new[batch:batch*32], image_out[batch:batch*32] = model(population[batch:batch*32])
+
     # print("xxxx*******2")
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
     result = tf.math.top_k(fitness, k=pop_size)
