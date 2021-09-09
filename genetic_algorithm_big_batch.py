@@ -88,7 +88,7 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     feature_new = np.zeros(pop_size,512)
     image_out = np.zeros(pop_size,1024,1024,3)
     for batch in range(big_batch_size):
-        feature_new[batch:batch*32], image_out[batch:batch*32] = model(population[batch:batch*32])
+        feature_new[batch:batch*32,:], image_out[batch:batch*32,:,:,:] = model(population[batch:batch*32,:])
 
     # print("xxxx*******2")
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
