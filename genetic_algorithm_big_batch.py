@@ -36,7 +36,29 @@ from skimage.transform import rescale, resize, downscale_local_mean
 from tensorflow.keras import Model, optimizers, layers, losses
 from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel
 from PIL import Image
+from stylegan2.utils import postprocess_images
+from load_models import load_generator
+from copy_official_weights import convert_official_weights_together
 
+
+##here we load generator
+from tf_utils import allow_memory_growth
+
+allow_memory_growth()
+
+# common variables
+ckpt_dir_base = './official-converted'
+
+# saving phase
+for use_custom_cuda in [False]:
+    # for use_custom_cuda in [True, False]:
+    ckpt_dir = os.path.join(ckpt_dir_base, 'cuda') if use_custom_cuda else os.path.join(ckpt_dir_base, 'ref')
+    convert_official_weights_together(ckpt_dir, use_custom_cuda)
+
+# inference phase
+ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
+g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
+seed = 6600
 
 # Genetic Algorithm Parameters
 big_batch_size = 10
@@ -78,6 +100,9 @@ truth = feat_gt
 population = np.random.randn(pop_size, features)
 # Initialize placeholders
 truth_ph = truth
+
+
+
 model = laten2featureFinalModel()
 print(model.summary())
 
@@ -89,8 +114,9 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     image_out = np.zeros(pop_size,1024,1024,3)
     for batch in range(big_batch_size):
         input = population[batch:(batch+1)*32,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
-        feature_new[batch:(batch+1)*32,:], image_out[batch:(batch+1)*32,:,:,:] = model(input)
-
+        image_out = g_clone([input, []], training=False, truncation_psi=0.5)
+        image_out[batch:(batch+1)*32,:,:,:] = postprocess_images(image_out)
+        feature_new[batch:(batch+1)*32,:] = arcfacemodel(tf.image.resize(image_out[batch:(batch+1)*32,:,:,:] , size=(112, 112)) / 255.)
     # print("xxxx*******2")
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
     result = tf.math.top_k(fitness, k=pop_size)
