@@ -98,7 +98,7 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     return population,best_individual,best_val,fitness,best_img
 
 
-dirs_name = os.listdir("./data/auto_updata3")       # 人名文件夹列表
+dirs_name = os.listdir("./data/no_updata3")       # 人名文件夹列表
 print(dirs_name)
 
 
@@ -106,7 +106,7 @@ loss_history = np.zeros(generations)
 loss_history[0] = 4
 
 for name in dirs_name:
-    dir_path = os.path.join("./data/auto_updata3", name)        # 人名目录
+    dir_path = os.path.join("./data/no_updata3", name)        # 人名目录
     img_name_list = os.listdir(dir_path)
     img_name = img_name_list[0]
     img_path = os.path.join(dir_path, img_name)
@@ -128,12 +128,9 @@ for name in dirs_name:
         # Create cross-over matrices for plugging in.
         crossover_mat = np.ones(shape=[num_children, features])
         crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)        # 选取每行的交换点
-        crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
         for pop_ix in range(num_children):
-            if crossover_point[pop_ix] <= crossover_point2[pop_ix]:
-                crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.       # 将每行的交换点前面的元素置为0
-            else:
-                crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
+            crossover_mat[pop_ix, 0:crossover_point[pop_ix]] = 0.       # 将每行的交换点前面的元素置为0
+
                 # Generate mutation probability matrices
         mutation_prob_mat = np.random.uniform(size=[num_children, features])
         mutation_values = np.random.normal(size=[num_children, features])
@@ -153,10 +150,8 @@ for name in dirs_name:
         tau = 0.1
         best_fit = tf.reduce_max(fitness)       # fitness是负的，越大越好
         loss_mean = -tf.reduce_mean(fitness)        # 整个population的平均loss，越小越好
-        loss_history[i+1] = loss_mean
+        loss_history[i + 1] = loss_mean
         print(loss_history[i+1])
-        mutation = 3. / pop_size + ((loss_mean - tau) / pop_size) * 5
-        mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
 
         while (i == 0):
             pre_fit = -best_fit

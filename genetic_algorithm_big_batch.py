@@ -110,8 +110,8 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Calculate fitness (MSE)
     # population -> v
     # print("xxxx*******1",population)
-    feature_new = np.zeros(pop_size,512)
-    image_out = np.zeros(pop_size,1024,1024,3)
+    feature_new = np.zeros((pop_size,512))
+    image_out = np.zeros((pop_size,1024,1024,3))
     for batch in range(big_batch_size):
         input = population[batch:(batch+1)*32,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
         image_out = g_clone([input, []], training=False, truncation_psi=0.5)
@@ -182,7 +182,7 @@ for i in range(generations):
     # print(image_out)
     # if i % 5 == 0:
     Image.fromarray(image_out, 'RGB').save(
-            'data/test13/out_' + str(i) + '.png')
+            'data/test18/out_' + str(i) + '.png')
     tau = 0.6
     tau_bond = 0.2
     # pay attention to fitness neg.
