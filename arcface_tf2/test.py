@@ -36,7 +36,7 @@ def main(_argv):
         model.load_weights(ckpt_path)
     else:
         print("[*] Cannot find ckpt from {}.".format(ckpt_path))
-        exit()
+        # exit()
 
     if FLAGS.img_path:
         print("[*] Encode {} to ./output_embeds.npy".format(FLAGS.img_path))
@@ -76,3 +76,8 @@ if __name__ == '__main__':
         app.run(main)
     except SystemExit:
         pass
+
+
+# 2021 09 13
+# Insight RS100 0.9968, 0.9808, 0.9737
+# Insight RS50 0.9970, 0.9725, 0.8867

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import tqdm
 from sklearn.model_selection import KFold
-
+import bcolz
 from .utils import l2_norm
 
 
@@ -21,7 +21,7 @@ def get_val_data(data_path):
     """get validation data"""
     lfw, lfw_issame = get_val_pair(data_path, 'lfw_align_112/lfw')
     agedb_30, agedb_30_issame = get_val_pair(data_path,
-                                             'agedb_align_112/agedb_30')
+                                             'agedb_align_112/AgeDB/agedb_30')
     cfp_fp, cfp_fp_issame = get_val_pair(data_path, 'cfp_align_112/cfp_fp')
 
     return lfw, agedb_30, cfp_fp, lfw_issame, agedb_30_issame, cfp_fp_issame

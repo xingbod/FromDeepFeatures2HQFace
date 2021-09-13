@@ -15,6 +15,8 @@ from .layers import (
     ArcMarginPenaltyLogists
 )
 
+from arcface_tf2.modules.keras_resnet100 import KitModel
+from arcface_tf2.modules.keras_resnet50 import KitModel_50
 
 def _regularizer(weights_decay=5e-4):
     return tf.keras.regularizers.l2(weights_decay)
@@ -33,6 +35,11 @@ def Backbone(backbone_type='ResNet50', use_pretrain=True):
         elif backbone_type == 'MobileNetV2':
             return MobileNetV2(input_shape=x_in.shape[1:], include_top=False,
                                weights=weights)(x_in)
+        elif backbone_type == 'Insight_ResNet100':# here use the pretrained model build by Insightface team
+            print('[*] Loading Insightface pre-train model!')
+            return KitModel('arcface_tf2/pre_models/resnet100/resnet100.npy')(x_in)
+        elif backbone_type == 'Insight_ResNet50':# here use the pretrained model build by Insightface team
+            return KitModel_50('arcface_tf2/pre_models/resnet50/resnet50.npy')(x_in)
         else:
             raise TypeError('backbone_type error!')
     return backbone
@@ -81,7 +88,10 @@ def ArcFaceModel(size=None, channels=3, num_classes=None, name='arcface_model',
 
     x = Backbone(backbone_type=backbone_type, use_pretrain=use_pretrain)(x)
 
-    embds = OutputLayer(embd_shape, w_decay=w_decay)(x)
+    if backbone_type == 'Insight_ResNet100' or backbone_type == 'Insight_ResNet50':  # here use the pretrained model build by Insightface team, we don't need the output layer anymore
+        embds = x
+    else:
+        embds = OutputLayer(embd_shape, w_decay=w_decay)(x)
 
     if training:
         assert num_classes is not None

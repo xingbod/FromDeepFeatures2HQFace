@@ -199,7 +199,7 @@ def createlatent2featureModelfake():
     return model
 
 def loadFaceModel():
-    cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+    cfg = load_yaml('./arcface_tf2/configs/arc_pre_trained_res100.yaml')
     arcfacemodel = ArcFaceModel(size=cfg['input_size'],
                                 backbone_type=cfg['backbone_type'],
                                 training=False)
