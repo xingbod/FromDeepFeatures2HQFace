@@ -48,21 +48,15 @@ allow_memory_growth()
 
 # common variables
 ckpt_dir_base = './official-converted'
-
-# saving phase
-for use_custom_cuda in [False]:
-    # for use_custom_cuda in [True, False]:
-    ckpt_dir = os.path.join(ckpt_dir_base, 'cuda') if use_custom_cuda else os.path.join(ckpt_dir_base, 'ref')
-    convert_official_weights_together(ckpt_dir, use_custom_cuda)
-
 # inference phase
 ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
 seed = 6600
 
 # Genetic Algorithm Parameters
-big_batch_size = 10
-pop_size = 32 * big_batch_size     # 种群大小
+big_batch_size = 20
+one_batch_size = 16
+pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
 selection = 0.2     # 筛选前20
 mutation = 1. / pop_size
@@ -97,14 +91,11 @@ truth = feat_gt
 
 
 # Initialize population array
-population = np.random.randn(pop_size, features)
+# population = np.random.randn(pop_size, features)
+population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)
 # Initialize placeholders
 truth_ph = truth
 
-
-
-model = laten2featureFinalModel()
-print(model.summary())
 
 def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Calculate fitness (MSE)
@@ -113,10 +104,12 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     feature_new = np.zeros((pop_size,512))
     image_out = np.zeros((pop_size,1024,1024,3))
     for batch in range(big_batch_size):
-        input = population[batch:(batch+1)*32,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
-        image_out = g_clone([input, []], training=False, truncation_psi=0.5)
-        image_out[batch:(batch+1)*32,:,:,:] = postprocess_images(image_out)
-        feature_new[batch:(batch+1)*32,:] = arcfacemodel(tf.image.resize(image_out[batch:(batch+1)*32,:,:,:] , size=(112, 112)) / 255.)
+        input = population[batch*one_batch_size:(batch+1)*one_batch_size,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
+        image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
+        image_out_g = postprocess_images(image_out_g)
+        # pay attention to the slice index number
+        image_out[batch*one_batch_size:(batch + 1) * one_batch_size, :, :, :] = image_out_g.numpy()
+        feature_new[batch*one_batch_size:(batch+1)*one_batch_size,:] = arcfacemodel(tf.image.resize(image_out_g.numpy() , size=(112, 112)) / 255.)
     # print("xxxx*******2")
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
     result = tf.math.top_k(fitness, k=pop_size)
@@ -191,7 +184,7 @@ for i in range(generations):
     # *************************1.0********
     mutation = 3/pop_size + (tf.reduce_mean(-fitness) - tau)/pop_size
     # here we adjuect scale based on the loss history
-    mutation = mutation.numpy() * (loss_history[i+1]-loss_history[i])
+    # mutation = mutation.numpy() * (loss_history[i+1]-loss_history[i])
     if i % 5 == 0:
         best_fit = tf.reduce_min(fitness)
         print('Generation: {},mutation rate: {}, Best Fitness (lowest MSE): {:.2}'.format(i,mutation, -best_fit))
