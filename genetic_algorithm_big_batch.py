@@ -26,6 +26,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.python.framework import ops
+import tqdm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
@@ -103,7 +104,7 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # print("xxxx*******1",population)
     feature_new = np.zeros((pop_size,512))
     image_out = np.zeros((pop_size,1024,1024,3))
-    for batch in range(big_batch_size):
+    for batch in tqdm.tqdm(range(big_batch_size)):
         input = population[batch*one_batch_size:(batch+1)*one_batch_size,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
         image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
         image_out_g = postprocess_images(image_out_g)
