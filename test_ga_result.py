@@ -27,41 +27,63 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 from shutil import copy
+import time
 
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
 from skimage import io
 from skimage.transform import rescale, resize, downscale_local_mean
 from tensorflow.keras import Model, optimizers, layers, losses
-from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel
+from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel, loadArcfaceModel
 from PIL import Image
+from stylegan2.utils import postprocess_images
+from load_models import load_generator
+
 
 
 # Genetic Algorithm Parameters
-pop_size = 36      # 种群大小
+big_batch_size = 8
+one_batch_size = 16
+pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
 selection = 0.1     # 筛选前20
-mutation = 3. / pop_size
+# mutation = 3. / (pop_size / 10)
+mutation = 4. / 32
 generations = 1000
 num_parents = int(pop_size * selection)
 num_children = pop_size - num_parents
 
-arcfacemodel = loadFaceModel()
+arcfacemodel = loadArcfaceModel()
 
+ckpt_dir_base = './official-converted'
+ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
+g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
 
-model = laten2featureFinalModel()
-print(model.summary())
+# model = laten2featureFinalModel()
+# print(model.summary())
 
 
 def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Calculate fitness (MSE)
     # population -> v
     # print("xxxx*******1",population)
-    feature_new, image_out = model(population)      # 将population传入model得到pop_size张feature和image
+    # feature_new, image_out = model(population)      # 将population传入model得到pop_size张feature和image
     # print("xxxx*******2")
+
+    feature_new = np.zeros((pop_size, 512))
+    image_out = np.zeros((pop_size, 1024, 1024, 3))
+    for batch in range(big_batch_size):
+        input = population[batch * one_batch_size:(batch + 1) * one_batch_size,
+                :]  # tf.Variable(np.random.randn(32, features), dtype=tf.float32)
+        image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
+        image_out_g = postprocess_images(image_out_g)
+        # pay attention to the slice index number
+        image_out[batch * one_batch_size:(batch + 1) * one_batch_size, :, :, :] = image_out_g.numpy()
+        feature_new[batch * one_batch_size:(batch + 1) * one_batch_size, :] = arcfacemodel(
+            tf.image.resize(image_out_g, size=(112, 112)) / 255.)
+
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)     # 计算每一行feature和gt的fitness，越大越好
     result = tf.math.top_k(fitness, k=pop_size)
     top_vals, top_ind = result.values, result.indices       # 拿到最好的pop_size个fitness的值和对应索引
@@ -98,15 +120,15 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     return population,best_individual,best_val,fitness,best_img
 
 
-dirs_name = os.listdir("./data/auto_updata3")       # 人名文件夹列表
+dirs_name = os.listdir("./data/qikun")       # 人名文件夹列表
 print(dirs_name)
 
 
-loss_history = np.zeros(generations)
-loss_history[0] = 4
+# loss_history = np.zeros(generations)
+# loss_history[0] = 2
 
 for name in dirs_name:
-    dir_path = os.path.join("./data/auto_updata3", name)        # 人名目录
+    dir_path = os.path.join("./data/qikun", name)        # 人名目录
     img_name_list = os.listdir(dir_path)
     img_name = img_name_list[0]
     img_path = os.path.join(dir_path, img_name)
@@ -125,6 +147,7 @@ for name in dirs_name:
     new_fit = 0.0
     num = 0
     for i in range(generations):
+        time1 = time.time()
         # Create cross-over matrices for plugging in.
         crossover_mat = np.ones(shape=[num_children, features])
         crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)        # 选取每行的交换点
@@ -150,20 +173,24 @@ for name in dirs_name:
         # image_out = image_out / 255
         # print(image_out)
         # if i % 5 == 0:
-        tau = 0.1
+        tau = 0.5
         best_fit = tf.reduce_max(fitness)       # fitness是负的，越大越好
-        loss_mean = -tf.reduce_mean(fitness)        # 整个population的平均loss，越小越好
-        loss_history[i+1] = loss_mean
-        print(loss_history[i+1])
-        mutation = 3. / pop_size + ((loss_mean - tau) / pop_size) * 5
-        mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
+        # loss_mean = -tf.reduce_mean(fitness)        # 整个population的平均loss，越小越好
+        # loss_history[i+1] = loss_mean
+        # print(loss_history[i+1])
+        # mutation = (3. / 32 + ((loss_mean - tau) / 32) * 5)
+        # mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
 
         while (i == 0):
             pre_fit = -best_fit
             break
 
+        time2 = time.time()
+
+        time_gap = time2 - time1
+
         best_fit_numpy = -(best_fit.numpy())
-        print('Generation: {}, mutation rate: {}, Best Fitness (lowest MSE): {:.4}'.format(i, mutation, -best_fit))
+        print('Generation: {}, time: {:.2}, mutation rate: {}, Best Fitness (lowest MSE): {:.4}'.format(i, time_gap, mutation, -best_fit))
         if i % 5 == 0:
             Image.fromarray(image_out, 'RGB').save(
                 dir_path + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')

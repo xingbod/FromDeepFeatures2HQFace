@@ -151,6 +151,7 @@ def createlatent2featureModel():
     return model
 
 
+
 def createlatent2featureModelfake():
     cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
     arcfacemodel = ArcFaceModel(size=cfg['input_size'],
@@ -206,6 +207,22 @@ def loadFaceModel():
 
     ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
     print("****ckpt_path*******", ckpt_path)
+    if ckpt_path is not None:
+        print("[*] load ckpt from {}".format(ckpt_path))
+        arcfacemodel.load_weights(ckpt_path)
+
+    arcfacemodel.trainable = True
+    return arcfacemodel
+
+
+def loadArcfaceModel():
+    cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+    arcfacemodel = ArcFaceModel(size=cfg['input_size'],
+                                backbone_type=cfg['backbone_type'],
+                                training=False)
+
+    ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
+    print("***********", ckpt_path)
     if ckpt_path is not None:
         print("[*] load ckpt from {}".format(ckpt_path))
         arcfacemodel.load_weights(ckpt_path)

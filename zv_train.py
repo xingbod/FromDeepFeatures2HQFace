@@ -18,7 +18,7 @@ learning_rate = 0.000001
 model = tf.saved_model.load('./models3/step110000')
 optimizer = tf.keras.optimizers.Adam(learning_rate)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
 
