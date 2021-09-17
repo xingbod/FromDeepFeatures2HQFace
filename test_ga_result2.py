@@ -24,7 +24,7 @@ big_batch_size = 8
 one_batch_size = 16
 pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
-selection = 0.1     # 筛选前20
+selection = 0.2     # 筛选前20
 # mutation = 3. / (pop_size / 10)
 mutation = 3. / 32
 generations = 1000
@@ -99,7 +99,7 @@ dirs_name = os.listdir(f"./data/celeba_select")  # 人名文件夹列表
 for name in dirs_name:
     dir_path = os.path.join("./data/celeba_select", name)  # 人名目录
 
-    the_img_savepath = f"./data/celeba_select_result/{name}"
+    the_img_savepath = f"./data/celeba_result/{name}"
     if not os.path.exists(the_img_savepath):
         os.mkdir(the_img_savepath)
 
