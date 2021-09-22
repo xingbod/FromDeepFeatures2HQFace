@@ -1,6 +1,6 @@
 import numpy as np
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -41,15 +41,19 @@ print(model.summary())
 
 # 1 st
 ranom_fix_z = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
-print('ranom_fix_z GT',ranom_fix_z)
+# print('ranom_fix_z GT',ranom_fix_z)
 image_out_gt = model(ranom_fix_z)
 gt_img = tf.cast(image_out_gt, dtype=tf.dtypes.uint8)
 gt_img = gt_img.numpy()
 # image_out = image_out / 255
 # print(image_out)
 Image.fromarray(gt_img[0], 'RGB').save(
-    'data/test6/GT_out.png')
+    'data/outputs/SGD_mse_x/GT_out.png')
 
+
+
+pre_loss = 0.0
+num = 0
 inp = tf.Variable(np.random.normal(size=(1, 512)), dtype=tf.float32)
 for i in range(400):
     with tf.GradientTape(watch_accessed_variables=False) as tape:
@@ -70,18 +74,26 @@ for i in range(400):
         image_out_convert = image_out_convert.numpy()
         # image_out = image_out / 255
         # print(image_out)
-        Image.fromarray(image_out_convert[0], 'RGB').save(
-            'data/test6/out_' + str(i) +'_' + '.png')
         # print(feature_new.shape)
         # print(y.shape)
         loss = tf.reduce_mean(tf.losses.mse(image_out, image_out_gt))
+        if i % 5 == 0:
+            Image.fromarray(image_out_convert[0], 'RGB').save(
+                'data/outputs/SGD_mse_x/out_' + str(i) + '_' + str(format(loss.numpy(), '.2f')) + '.png')
         print("epoch %d: loss %f"% (i, loss))
         # print(inp)
 
     grads = tape.gradient(loss, [inp])    # 使用 model.variables 这一属性直接获得模型中的所有变量
     # print(grads)
     optimizer.apply_gradients(grads_and_vars=zip(grads, [inp]))
-
+    new_loss = loss
+    if new_loss >= pre_loss:
+        num = num + 1
+    else:
+        pre_loss = new_loss
+        num = 0
+    if num >= 20:
+        break
 # print(inp)
 # print(model.variables)
 

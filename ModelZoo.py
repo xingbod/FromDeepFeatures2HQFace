@@ -227,7 +227,7 @@ def loadArcfaceModel():
         print("[*] load ckpt from {}".format(ckpt_path))
         arcfacemodel.load_weights(ckpt_path)
 
-    arcfacemodel.trainable = True
+    arcfacemodel.trainable = False
     return arcfacemodel
 
 
@@ -236,12 +236,12 @@ def loadStyleGAN2Model():
     ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 
     g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
-    g_clone.trainable = True
+    g_clone.trainable = False
     return g_clone
 
 
 def laten2featureFinalModel():
-    arcfacemodel = loadFaceModel()
+    arcfacemodel = loadArcfaceModel()
     g_clone = loadStyleGAN2Model()
     inputs_latents = Input((g_clone.z_dim))
     image_out = g_clone([inputs_latents, []], training=False, truncation_psi=0.5)
