@@ -8,12 +8,13 @@ import tqdm
 os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3,4,5'
 
 one_batch_size = 32
-num_gen_epochs = 100
+num_gen_epochs = 200
 regression_batch = 512
 num_pairs = num_gen_epochs * one_batch_size
 z_0 = np.zeros((num_pairs,512))
 v_0 = np.zeros((num_pairs,512))
 # step 1, generate z v pairs
+print('step 1: gen z v pairs...')
 with tf.device('/gpu:0'):
     arcfacemodel = loadArcfaceModel()
     g_clone = loadStyleGAN2Model()
@@ -26,6 +27,7 @@ with tf.device('/gpu:0'):
         z_0[batch*one_batch_size:(batch+1)*one_batch_size,:] = latents
         v_0[batch*one_batch_size:(batch+1)*one_batch_size,:] = features.numpy()
 # step 2: train model f
+print('step 2: train model f...')
 with tf.device('/gpu:1'):
     mymodel = mytestModel()
     learning_rate = tf.constant(0.001)
@@ -42,7 +44,7 @@ with tf.device('/gpu:1'):
     dataset = tf.data.Dataset.from_tensor_slices((v_0,z_0)).repeat().batch(regression_batch)
 
     mymodel.fit(dataset,
-              epochs=20,
+              epochs=40,
               steps_per_epoch=int(num_pairs/regression_batch),
               callbacks=callbacks,
               initial_epoch=0)
@@ -51,10 +53,8 @@ with tf.device('/gpu:1'):
 # step 3: generate further cascade of z v pair
 z_0 = np.zeros((num_pairs,512))
 v_0 = np.zeros((num_pairs,512))
-# step 1, generate z v pairs
+print('step 3: generate further cascade of z v pair...')
 with tf.device('/gpu:0'):
-    arcfacemodel = loadArcfaceModel()
-    g_clone = loadStyleGAN2Model()
     for batch in tqdm.tqdm(range(num_gen_epochs)):
         latents = np.random.randn(one_batch_size, 512)
         z_input = latents.astype(np.float32)
@@ -65,13 +65,12 @@ with tf.device('/gpu:0'):
         v_0[batch*one_batch_size:(batch+1)*one_batch_size,:] = features.numpy()
 
 z_1 = np.zeros((num_pairs,512))
+print('step 3: pred new z...')
 with tf.device('/gpu:1'):
     for batch in tqdm.tqdm(range(num_gen_epochs)):
         z_1[batch*one_batch_size:(batch+1)*one_batch_size,:] = mymodel(v_0[batch*one_batch_size:(batch+1)*one_batch_size,:]).numpy()
 
-# step 3: generate further cascade of z v pair
 v_1 = np.zeros((num_pairs,512))
-# step 1, generate z v pairs
 with tf.device('/gpu:0'):
     for batch in tqdm.tqdm(range(num_gen_epochs)):
         latents = z_1[batch*one_batch_size:(batch+1)*one_batch_size,:]
@@ -81,9 +80,9 @@ with tf.device('/gpu:0'):
         features = arcfacemodel(tf.image.resize(images_out, size=(112, 112)) / 255.)
         v_1[batch*one_batch_size:(batch+1)*one_batch_size,:] = features.numpy()
 # step 4 train
+print('step 4: train...')
 with tf.device('/gpu:1'):
     dataset = tf.data.Dataset.from_tensor_slices((v_1,z_0)).repeat().batch(regression_batch)
     mymodel.fit(dataset,
               epochs=40,
-              steps_per_epoch=int(num_pairs/regression_batch),
-              callbacks=callbacks)
+              steps_per_epoch=int(num_pairs/regression_batch))
