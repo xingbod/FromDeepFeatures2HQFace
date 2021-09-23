@@ -45,7 +45,6 @@ with tf.device('/gpu:1'):
               epochs=20,
               steps_per_epoch=int(num_pairs/regression_batch),
               callbacks=callbacks,
-              validation_split = 0.1,
               initial_epoch=0)
 
 
@@ -87,5 +86,4 @@ with tf.device('/gpu:1'):
     mymodel.fit(dataset,
               epochs=40,
               steps_per_epoch=int(num_pairs/regression_batch),
-              validation_split=0.1,
               callbacks=callbacks)
