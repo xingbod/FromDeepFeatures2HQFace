@@ -72,7 +72,8 @@ for num_repeat in range(50):
             with tf.GradientTape() as tape:
                 image_out = g_clone([inp, []], training=False, truncation_psi=0.5)
                 image_out = postprocess_images(image_out)
-                image_out_g = image_out.numpy()
+                image_out_g = tf.cast(image_out, dtype=tf.dtypes.uint8)
+                image_out_g = image_out_g.numpy()
                 image_out = tf.image.resize(image_out, size=(112, 112)) / 255.
                 feature_new = arcfacemodel(image_out)
                 loss = tf.reduce_mean(tf.square(tf.subtract(feature_new, feature_gt)), 1)
