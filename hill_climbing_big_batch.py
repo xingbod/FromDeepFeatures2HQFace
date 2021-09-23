@@ -125,7 +125,7 @@ while lastFitness > threshold:
     new_points = np.array(new_points)
     feature_new = np.zeros((1024,512))
     image_out = np.zeros((1024,112,112,3))
-    for batch_idx in range(64):
+    for batch_idx in range(32):
         input = new_points[batch_idx*one_batch_size:(batch_idx+1)*one_batch_size,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
         image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
         image_out_g = postprocess_images(image_out_g)
