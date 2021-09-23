@@ -16,9 +16,9 @@ with tf.device('/gpu:0'):
     arcfacemodel = loadArcfaceModel()
     g_clone = loadStyleGAN2Model()
 
-with tf.device('/gpu:1'):
+with tf.device('/gpu:0'):
     mymodel = mytestModel()
-    learning_rate = tf.constant(0.001)
+    learning_rate = tf.constant(0.01)
     optimizer = tf.keras.optimizers.SGD(
         learning_rate=learning_rate, momentum=0.9, nesterov=True)
     mymodel.compile(optimizer=optimizer, loss='mse')
@@ -45,7 +45,7 @@ for epoch in range(100):
             v_0[batch * one_batch_size:(batch + 1) * one_batch_size, :] = features.numpy()
     # step 2: train model f
     print('step 2: train model f...')
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         dataset = tf.data.Dataset.from_tensor_slices((v_0, z_0)).repeat().batch(regression_batch)
         mymodel.fit(dataset,
                     epochs=10,
@@ -67,7 +67,7 @@ for epoch in range(100):
 
     z_1 = np.zeros((num_pairs, 512))
     print('step 3: pred new z...')
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         for batch in tqdm.tqdm(range(num_gen_epochs)):
             z_1[batch * one_batch_size:(batch + 1) * one_batch_size, :] = mymodel(
                 v_0[batch * one_batch_size:(batch + 1) * one_batch_size, :]).numpy()
@@ -83,11 +83,11 @@ for epoch in range(100):
             v_1[batch * one_batch_size:(batch + 1) * one_batch_size, :] = features.numpy()
     # step 4 train
     print('step 4: train...')
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         dataset = tf.data.Dataset.from_tensor_slices((v_1, z_0)).repeat().batch(regression_batch)
         mymodel.fit(dataset,
                     epochs=10,
                     steps_per_epoch=int(num_pairs / regression_batch))
 
-    save_path = os.path.join('./models', f'step{epoch}')
-    tf.saved_model.save(mymodel, save_path)
+        save_path = os.path.join('./models', f'step{epoch}')
+        tf.saved_model.save(mymodel, save_path)
