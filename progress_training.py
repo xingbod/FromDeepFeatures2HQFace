@@ -9,6 +9,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3,4,5'
 
 one_batch_size = 32
 num_gen_epochs = 1000
+regression_batch = 512
 num_pairs = num_gen_epochs * one_batch_size
 z_0 = np.zeros((num_pairs,512))
 v_0 = np.zeros((num_pairs,512))
@@ -38,11 +39,11 @@ with tf.device('/gpu:1'):
     tb_callback._total_batches_seen = 1
     tb_callback._samples_seen = model_batch_size
     callbacks = [tb_callback]
-    dataset = tf.data.Dataset.from_tensor_slices((v_0,z_0)).batch(512)
+    dataset = tf.data.Dataset.from_tensor_slices((v_0,z_0)).batch(regression_batch)
 
     mymodel.fit(dataset,
               epochs=20,
-              steps_per_epoch=256,
+              steps_per_epoch=int(num_pairs/regression_batch),
               callbacks=callbacks,
               initial_epoch=0)
 
@@ -81,9 +82,8 @@ with tf.device('/gpu:0'):
         v_1[batch*one_batch_size:(batch+1)*one_batch_size,:] = features.numpy()
 # step 4 train
 with tf.device('/gpu:1'):
-    dataset = tf.data.Dataset.from_tensor_slices((v_1,z_0)).batch(512)
+    dataset = tf.data.Dataset.from_tensor_slices((v_1,z_0)).batch(regression_batch)
     mymodel.fit(dataset,
-              epochs=20,
-              steps_per_epoch=256,
-              callbacks=callbacks,
-              initial_epoch=0)
+              epochs=40,
+              steps_per_epoch=int(num_pairs/regression_batch),
+              callbacks=callbacks)
