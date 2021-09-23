@@ -124,26 +124,22 @@ while lastFitness > threshold:
     # one_batch_size = 16
     new_points = np.array(new_points)
     feature_new = np.zeros((1024,512))
-    image_out_all = np.zeros((1024,112,112,3))
+    image_out = np.zeros((1024,112,112,3))
     for batch_idx in range(32):
         input = new_points[batch_idx*one_batch_size:(batch_idx+1)*one_batch_size,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
-        image_out = g_clone([input, []], training=False, truncation_psi=0.5)
-        image_out = postprocess_images(image_out)
-        # image_out_g = tf.cast(image_out, dtype=tf.dtypes.uint8)
+        image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
+        image_out_g = postprocess_images(image_out_g)
+        image_out_g = tf.cast(image_out_g, dtype=tf.dtypes.uint8)
         # pay attention to the slice index number
-        img_112 = tf.image.resize(image_out, size=(112, 112))    # to arcfacemodel
-        print('------------------------------------------------------')
-        print(img_112.shape)
-        print(img_112.dtype)
-        print(image_out_all.shape)
+        img_112 = tf.image.resize(image_out_g, size=(112, 112), method='nearest', antialias=True).numpy()
         # print('img_112:',img_112.shape)
         # Image.fromarray(img_112[0], 'RGB').save(
         #     the_img_savepath + r'/image_out_g_' + str(i) + "_" + str(batch_idx) + '.png')
-        image_out_all[batch_idx * one_batch_size:(batch_idx + 1) * one_batch_size, :, :, :] = img_112.numpy()
+        image_out[batch_idx * one_batch_size:(batch_idx + 1) * one_batch_size, :, :, :] = img_112
     # batch size for arcface 128
     # for batch_idx in range(2):
     #     feature_new[batch_idx * one_batch_size_arc:(batch_idx + 1) * one_batch_size_arc, :] = arcfacemodel(image_out[batch_idx * one_batch_size_arc:(batch_idx + 1) * one_batch_size_arc, :, :, :] ).numpy()
-    arc_input = image_out_all / 255.
+    arc_input = image_out / 255.
     feature_new = arcfacemodel(arc_input).numpy()
 
     d = np.sqrt(np.sum((feature_new - point1)**2,axis = 1 ))
@@ -161,7 +157,7 @@ while lastFitness > threshold:
         time_gap = time2 - time1
         print('Generation: {}, time: {:.2}, Best Fitness (lowest MSE): {:.4}'.format(i, time_gap,d[minindex]))
         lastFitness = d[minindex]
-        Image.fromarray(tf.cast(image_out_all[minindex], dtype=tf.dtypes.uint8).numpy(), 'RGB').save(
+        Image.fromarray(image_out[minindex], 'RGB').save(
             the_img_savepath + r'/out_' + str(i) + "_" + str(format(lastFitness, '.2f')) + '.png')
 
     else:

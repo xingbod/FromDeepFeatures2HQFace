@@ -18,10 +18,10 @@ def regressionModel():
     model = Model(inputs=[inputs], outputs=[x])
     return model
 
-# fake arcfacemodel
+
 def mytestModel():
     inputs = Input((512))
-    x = tf.keras.layers.Dense(units=512, activation='relu')(inputs)
+    x = tf.keras.layers.Dense(units=1024, activation='relu')(inputs)
     output = tf.keras.layers.Dense(units=512)(x)
     model = Model(inputs=[inputs], outputs=[output])
     model.trainable = False
