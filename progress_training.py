@@ -7,8 +7,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 import tqdm
 os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3,4,5'
 
-one_batch_size = 32
-num_gen_epochs = 200
+one_batch_size = 64
+num_gen_epochs = 2000
 regression_batch = 512
 num_pairs = num_gen_epochs * one_batch_size
 z_0 = np.zeros((num_pairs,512))
@@ -86,3 +86,6 @@ with tf.device('/gpu:1'):
     mymodel.fit(dataset,
               epochs=40,
               steps_per_epoch=int(num_pairs/regression_batch))
+
+save_path = os.path.join('./models')
+tf.saved_model.save(mymodel, './models/progressiveode/')
