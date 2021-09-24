@@ -8,7 +8,7 @@ import tqdm
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 one_batch_size = 32
-num_gen_epochs = 100
+num_gen_epochs = 5000
 regression_batch = 512
 num_pairs = num_gen_epochs * one_batch_size
 

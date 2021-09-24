@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 from shutil import copy
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -16,13 +16,13 @@ from skimage.transform import resize
 import pickle
 
 
-# lfw_dataset_path = r"D:\data\celeba_select"
+# lfw_dataset_path = "./data/celeba_select"
 # names_list = os.listdir(lfw_dataset_path)
 # print(names_list)
 #
 # for name in names_list:
-#     imgPair_path = os.path.join(r"D:\data\celeba_pairs", f"{name}_pair")
-#     imgResult_path = os.path.join(r"D:\data\celeba_select_result", f"{name}")
+#     imgPair_path = os.path.join("./data/celeba_pairs", f"{name}")
+#     imgResult_path = os.path.join("./data/celeba_results/result0", f"{name}")
 #     if not os.path.exists(imgPair_path):
 #         os.mkdir(imgPair_path)
 #     # 保存原图
