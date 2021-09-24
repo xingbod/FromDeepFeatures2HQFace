@@ -20,7 +20,7 @@ def regressionModel():
 
 
 def mytestModel():
-    inputs = Input((512))
+    inputs = Input((1, 512))
     x = tf.keras.layers.Dense(units=1024, activation='relu')(inputs)
     output = tf.keras.layers.Dense(units=512)(x)
     model = Model(inputs=[inputs], outputs=[output])
