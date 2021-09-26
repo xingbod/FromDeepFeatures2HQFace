@@ -6,9 +6,8 @@ import matplotlib.pyplot as plt
 import itertools
 # import cv2
 import seaborn as sns
-import tensorflow as tf
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 
 def euc_sim(a, b):
@@ -24,20 +23,22 @@ def nchoosek(startnum, endnum, step=1, n=1):
         c.append(list(i))
     return c
 
-
 # calculate imposter scores
 def cal_imposter_scorces():
+    imposter_scores = []
     features_path = "./data/lfw_feature_pairs/pairs1"
     names_list = os.listdir(features_path)
-    imposter_scores = []
     for i,j in nchoosek(0, 49, step=1, n=2):
         with open(os.path.join(features_path, names_list[i], 'source_feature', 'source.pickle'), 'rb') as file:
             features1 = np.array(pickle.load(file))[:3]
         with open(os.path.join(features_path, names_list[j], 'source_feature', 'source.pickle'), 'rb') as file:
             features2 = np.array(pickle.load(file))[:3]
-        imposter_scores.append(souce_euc(features1 , features2))
-        imposter_scores = tf.constant(imposter_scores, dtype=tf.float32)
-        np.savetxt('./data/imposter_scores.txt', imposter_scores)
+        print('features1.shape',features1.shape)
+        score = np.sum((np.array(features1) - np.array(features2)) ** 2, axis=2)
+        # print(score[:,0])
+        imposter_scores.extend(score[:,0])
+    np.savetxt('./data/imposter_scores.txt', imposter_scores)
+    print(imposter_scores)
     return imposter_scores
 
 
@@ -52,9 +53,9 @@ def cal_genuine_scorces():
             feature1 = features_list[i]
 
             feature2 = features_list[j]
-            genuine_scores.append(souce_euc(feature1, feature2))
-            genuine_scores = tf.constant(genuine_scores, dtype=tf.float32)
-            np.savetxt('./data/genuine_scores.txt', genuine_scores)
+            score =  np.sum((np.array(feature1) - np.array(feature2)) ** 2, axis=1)
+            genuine_scores.append(score)
+    np.savetxt('./data/genuine_scores.txt', genuine_scores)
     return genuine_scores
 
 
@@ -76,7 +77,6 @@ def cal_attack_scorces():
         with open(os.path.join(features_path2, name2, 'pred_feature', 'pred.pickle'), 'rb') as pred_file:
             pred_feature = np.array(pickle.load(pred_file))
         attack_scores.append(souce_euc(gt_feature, pred_feature))
-        attack_scores = tf.constant(attack_scores, dtype=tf.float32)
         np.savetxt('./data/attack_scores.txt', attack_scores)
     return attack_scores
 
@@ -92,7 +92,6 @@ def cal_attack_scorces2():
             features_list = np.array(pickle.load(file))
         for i in range(len(features_list)):
             attack_scores2.append(souce_euc(pred_feature, features_list[i]))
-            attack_scores2 = tf.constant(attack_scores2, dtype=tf.float32)
             np.savetxt('./data/attack_scores2.txt', attack_scores2)
     return attack_scores2
 
@@ -118,7 +117,7 @@ def draw_pic2():
     plt.savefig("score_dist_lfw1_type2.svg")
 
 if __name__ == '__main__':
-    cal_imposter_scorces()
+    # cal_imposter_scorces()
     cal_genuine_scorces()
-    cal_attack_scorces()
-    cal_attack_scorces2()
+    # cal_attack_scorces()
+    # cal_attack_scorces2()
