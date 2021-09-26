@@ -24,7 +24,22 @@ def mytestModel():
     x = tf.keras.layers.Dense(units=1024, activation='relu')(inputs)
     output = tf.keras.layers.Dense(units=512)(x)
     model = Model(inputs=[inputs], outputs=[output])
-    model.trainable = False
+    model.trainable = True
+    return model
+
+
+def mytestModel2():
+    inputs = Input((1, 512))
+    x = tf.keras.layers.Dense(units=512, activation='elu')(inputs)
+    x = x + inputs
+    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
+    x = x + inputs
+    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
+    x = x + inputs
+    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
+    x = x + inputs
+    output = tf.keras.layers.Dense(units=512)(x)
+    model = Model(inputs=[inputs], outputs=[output])
     return model
 
 
