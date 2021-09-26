@@ -7,13 +7,17 @@ import tensorflow as tf
 from ModelZoo import loadArcfaceModel, mytestModel
 from stylegan2.utils import postprocess_images
 from tensorflow.keras import optimizers,losses
+from tensorflow.keras.callbacks import EarlyStopping
 import pickle
 import numpy as np
 import tqdm
 
+allow_memory_growth()
 
+big_batch_size = 500000
+latents_data = []
+feature_date = []
 
-big_batch_size = 1600000
 
 def creatZvPairs():
     with tf.device('/cpu:0'):
@@ -32,40 +36,64 @@ def creatZvPairs():
             tf.image.resize(image_out_g, size=(112, 112)) / 255.).numpy()
         # images = tf.cast(image_out_g, dtype=tf.dtypes.uint8).numpy()
         #
-        with open(os.path.join('./data/rep_try/new_pairs_4', f'zv_pairs{batch}.pickle'), 'wb') as f_write:
+        with open(os.path.join('./data/rep_try/pairs_4', f'zv_pairs{batch}.pickle'), 'wb') as f_write:
             pickle.dump({'z': input, 'v': feature_new}, f_write)
         # print(f'generate zv_pair: {batch}/200000')
 
 
-def trainModel():
-    name_list = os.listdir('./data/rep_try/pairs')
-    model = mytestModel()
-    learning_rate = 0.0001
-    optimizer = optimizers.SGD(learning_rate=learning_rate)
-    for batch in tqdm.tqdm(range(21844)):
-        with open(os.path.join('./data/rep_try/pairs', f'{name_list[batch]}'), 'rb') as f_read:
-            zv_pairs = pickle.load(f_read)
-        latents = zv_pairs['z']
-        # print(latents)
-        features = zv_pairs['v']
-        # print(features)
-        for i in range(32):
-            with tf.GradientTape() as tape:
-                latents_pred = model(np.expand_dims(features[i][:], 0))
-                loss =tf.reduce_mean(losses.mse(latents[i][:], latents_pred))  +  np.mean(np.sum(latents_pred**2,axis = 1))
-                loss1 = tf.reduce_mean(losses.mse(latents[i][:], latents_pred))
-                # print(f"Epoch {batch}/36666 batch, {i}/32 step loss = {loss.numpy()}")
-            grads = tape.gradient(loss, model.variables)
-            optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
-        print(f"Epoch {batch}/21844 batch, loss = {loss.numpy()}")
-        print(f"Epoch {batch}/21844 batch, loss1 = {loss1.numpy()}")
-
-        if batch % 1000 == 0:
-            # print(f"Epoch {batch}/36666 batch, loss = {loss.numpy()}")
-            save_path = os.path.join('./data/rep_try/models', f'batch{batch}')
-            tf.saved_model.save(model, save_path)
+# def trainModel():
+#     name_list = os.listdir('./data/rep_try/pairs')
+#     model = mytestModel()
+#     learning_rate = 0.0001
+#     optimizer = optimizers.SGD(learning_rate=learning_rate)
+#     for batch in tqdm.tqdm(range(21844)):
+#         with open(os.path.join('./data/rep_try/pairs', f'{name_list[batch]}'), 'rb') as f_read:
+#             zv_pairs = pickle.load(f_read)
+#         latents = zv_pairs['z']
+#         # print(latents)
+#         features = zv_pairs['v']
+#         # print(features)
+#         for i in range(32):
+#             with tf.GradientTape() as tape:
+#                 latents_pred = model(np.expand_dims(features[i][:], 0))
+#                 loss =tf.reduce_mean(losses.mse(latents[i][:], latents_pred))  +  np.mean(np.sum(latents_pred**2,axis = 1))
+#                 loss1 = tf.reduce_mean(losses.mse(latents[i][:], latents_pred))
+#                 # print(f"Epoch {batch}/36666 batch, {i}/32 step loss = {loss.numpy()}")
+#             grads = tape.gradient(loss, model.variables)
+#             optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
+#         print(f"Epoch {batch}/21844 batch, loss = {loss.numpy()}")
+#         print(f"Epoch {batch}/21844 batch, loss1 = {loss1.numpy()}")
+#
+#         if batch % 1000 == 0:
+#             # print(f"Epoch {batch}/36666 batch, loss = {loss.numpy()}")
+#             save_path = os.path.join('./data/rep_try/models', f'batch{batch}')
+#             tf.saved_model.save(model, save_path)
 
 def creatDataset():
+    for batch in tqdm.tqdm(range(36666)):
+        model = tf.saved_model.load('./data/rep_try/batch60000')
+        learning_rate = 0.0001
+        optimizer = optimizers.SGD(learning_rate=learning_rate)
+        with open(os.path.join('./data/rep_try/pairs', f'zv_pairs{batch}.pickle'), 'rb') as f_read:
+            zv_pairs = pickle.load(f_read)
+        latents = zv_pairs['z']
+        features = zv_pairs['v']
+        for i in range(32):
+            latents_data.append(latents[i][:])
+            feature_date.append(features[i][:])
+
+    X_train, Y_train = np.array(feature_date), np.array(latents_data)
+    return X_train, Y_train
+
+
+def train_model():
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=2)
+    model = mytestModel()
+    X_train, Y_train = creatDataset()
+    model.compile(loss='mean_squared_error')
+    model.fit(X_train, Y_train, validation_split=0.125, batch_size= 1024, epochs= 1000, callbacks=[early_stopping])
+
+
 
 def train_again():
     for batch in tqdm.tqdm(range(36666)):
@@ -92,4 +120,4 @@ def train_again():
 
 
 if __name__ == '__main__':
-    trainModel()
+    creatZvPairs()
