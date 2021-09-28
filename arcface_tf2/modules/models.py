@@ -8,7 +8,13 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.applications import (
     MobileNetV2,
-    ResNet50
+    ResNet50,
+    ResNet101,
+    InceptionResNetV2,
+    InceptionV3,
+    Xception,
+    VGG16,
+    VGG19
 )
 from .layers import (
     BatchNormalization,
@@ -32,6 +38,15 @@ def Backbone(backbone_type='ResNet50', use_pretrain=True):
         if backbone_type == 'ResNet50':
             return ResNet50(input_shape=x_in.shape[1:], include_top=False,
                             weights=weights)(x_in)
+        elif backbone_type == 'InceptionResNetV2':
+            return InceptionResNetV2(input_shape=x_in.shape[1:], include_top=False,
+                               weights=weights)(x_in)
+        elif backbone_type == 'InceptionV3':
+            return InceptionV3(input_shape=x_in.shape[1:], include_top=False,
+                               weights=weights)(x_in)
+        elif backbone_type == 'Xception':
+            return Xception(input_shape=x_in.shape[1:], include_top=False,
+                               weights=weights)(x_in)
         elif backbone_type == 'MobileNetV2':
             return MobileNetV2(input_shape=x_in.shape[1:], include_top=False,
                                weights=weights)(x_in)

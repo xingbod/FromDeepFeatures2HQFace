@@ -93,8 +93,8 @@ def train_model():
     train_list = namelist[:18000]
     val_list = namelist[18001:]
 
-    train_gen = ZVDatasets(train_list,batch_size=28)
-    val_gen = ZVDatasets(val_list,batch_size=28)
+    train_gen = ZVDatasets(train_list,batch_size=64)
+    val_gen = ZVDatasets(val_list,batch_size=64)
     print('-----------------------------------------------------------')
     model.compile(loss='mse', optimizer=optimizer,metrics = ['mse'])
     print(model.summary())
@@ -128,4 +128,4 @@ def train_again():
 
 
 if __name__ == '__main__':
-    trainModel()
+    train_model()

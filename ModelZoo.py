@@ -31,13 +31,7 @@ def mytestModel():
 def mytestModel2():
     inputs = Input((1, 512))
     x = tf.keras.layers.Dense(units=512, activation='elu')(inputs)
-    x = x + inputs
-    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
-    x = x + inputs
-    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
-    x = x + inputs
-    x = tf.keras.layers.Dense(units=512, activation='elu')(x)
-    x = x + inputs
+    x = tf.keras.layers.Dense(units=1024, activation='elu')(x)
     output = tf.keras.layers.Dense(units=512)(x)
     model = Model(inputs=[inputs], outputs=[output])
     return model
@@ -232,6 +226,39 @@ def loadFaceModel():
 
 def loadArcfaceModel():
     cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+    arcfacemodel = ArcFaceModel(size=cfg['input_size'],
+                                backbone_type=cfg['backbone_type'],
+                                training=False)
+
+    ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
+    print("***********", ckpt_path)
+    if ckpt_path is not None:
+        print("[*] load ckpt from {}".format(ckpt_path))
+        arcfacemodel.load_weights(ckpt_path)
+
+    arcfacemodel.trainable = False
+    return arcfacemodel
+
+
+
+def loadArcfaceModel_xception():
+    cfg = load_yaml('./arcface_tf2/configs/arc_xception.yaml')
+    arcfacemodel = ArcFaceModel(size=cfg['input_size'],
+                                backbone_type=cfg['backbone_type'],
+                                training=False)
+
+    ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + cfg['sub_name'])
+    print("***********", ckpt_path)
+    if ckpt_path is not None:
+        print("[*] load ckpt from {}".format(ckpt_path))
+        arcfacemodel.load_weights(ckpt_path)
+
+    arcfacemodel.trainable = False
+    return arcfacemodel
+
+
+def loadArcfaceModel_inception():
+    cfg = load_yaml('./arcface_tf2/configs/arc_inceptionresnet.yaml')
     arcfacemodel = ArcFaceModel(size=cfg['input_size'],
                                 backbone_type=cfg['backbone_type'],
                                 training=False)

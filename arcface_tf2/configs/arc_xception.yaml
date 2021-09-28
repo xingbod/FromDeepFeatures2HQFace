@@ -1,0 +1,25 @@
+# general
+batch_size: 200
+input_size: 112
+eval_batch_size: 200
+# embd_shape is for the Resnet, backbone
+embd_shape: 512
+sub_name: 'arc_Xception'
+backbone_type: 'Xception' # 'ResNet50', 'MobileNetV2'
+head_type: ArcHead # 'ArcHead', 'NormHead'
+is_ccrop: False # central-cropping or not
+isLUT: False
+hidden_layer_remark: '1'
+T: 10
+
+# train
+train_dataset: './data/triplets_ds.tfrecord'
+# triplet loss not binary
+binary_img: False
+num_classes: 85742
+# I generate 1 milion triplets
+num_samples: 3000000
+epochs: 10
+base_lr: 0.01
+w_decay: !!float 5e-4
+save_steps: 10000
