@@ -25,16 +25,16 @@ def nchoosek(startnum, endnum, step=1, n=1):
 
 # calculate imposter scores
 def cal_imposter_scorces():
-    features_path = "./data/celeba_158_features_Inception"
+    features_path = "./data/colorferet_158_features_Xception"
     names_list = os.listdir(features_path)
     imposter_scores = []
-    for i,j in nchoosek(0, 157, step=1, n=2):
+    for i,j in nchoosek(0, len(names_list)-1, step=1, n=2):
         with open(os.path.join(features_path, names_list[i], 'source_feature', 'source.pickle'), 'rb') as file:
-            features1 = np.array(pickle.load(file))[:3]
+            features1 = np.array(pickle.load(file))[:2]
         with open(os.path.join(features_path, names_list[j], 'source_feature', 'source.pickle'), 'rb') as file:
-            features2 = np.array(pickle.load(file))[:3]
+            features2 = np.array(pickle.load(file))[:2]
         imposter_scores.append(euc_sim(features1 , features2))
-    imp = open(f"./data/scores/celeba_imposter_score_Inception.pickle", "wb")
+    imp = open(f"./data/scores/colorferet_imposter_score_Xception.pickle", "wb")
     pickle.dump(imposter_scores, imp)
     imp.close()
     # print(imposter_scores[:20])
@@ -42,7 +42,7 @@ def cal_imposter_scorces():
 
 
 def cal_genuine_scorces():
-    features_path = "./data/celeba_158_features_Inception"
+    features_path = "./data/colorferet_158_features_Xception"
     names_list = os.listdir(features_path)
     genuine_scores = []
     for name in names_list:
@@ -52,7 +52,7 @@ def cal_genuine_scorces():
             feature1 = features_list[i]
             feature2 = features_list[j]
             genuine_scores.append(euc_sim(feature1, feature2))
-    gen = open(f"./data/scores/celeba_genuine_score_Inception.pickle", "wb")
+    gen = open(f"./data/scores/colorferet_genuine_score_Xception.pickle", "wb")
     pickle.dump(genuine_scores, gen)
     gen.close()
     # print(genuine_scores[:20])
@@ -119,9 +119,9 @@ def draw_pic1():
     imp = cal_imposter_scorces()
     sns.distplot(gen, color="dodgerblue", label="Genuine score", **kwargs)
     sns.distplot(imp, color="orange", label="Imposter score", **kwargs)
-    sns.distplot(cal_attack_scorces(), color="deeppink", label="Reconstructed face score", **kwargs)
+    # sns.distplot(cal_attack_scorces(), color="deeppink", label="Reconstructed face score", **kwargs)
     plt.legend()
-    plt.savefig("celeba_Inception_type1.svg")
+    plt.savefig("colorferet_Xception_type1.svg")
     stats_a = get_eer_stats(gen, imp)
     # print(stats_a)
     print('stats_a.eer',stats_a.eer)# 10%
@@ -132,9 +132,9 @@ def draw_pic2():
     plt.figure(figsize=(10, 7), dpi=80)
     sns.distplot(cal_genuine_scorces(), color="dodgerblue", label="Genuine score", **kwargs)
     sns.distplot(cal_imposter_scorces(), color="orange", label="Imposter score", **kwargs)
-    sns.distplot(cal_attack_scorces2(), color="deeppink", label="Reconstructed face score", **kwargs)
+    # sns.distplot(cal_attack_scorces2(), color="deeppink", label="Reconstructed face score", **kwargs)
     plt.legend()
-    plt.savefig("celeba_Inception_type2.svg")
+    plt.savefig("colorferet_Xception_type2.svg")
 
 if __name__ == '__main__':
     draw_pic1()

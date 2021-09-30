@@ -4,9 +4,11 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 from shutil import copy
+from tf_utils import allow_memory_growth
 
+allow_memory_growth()
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -105,9 +107,9 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 for num_repeat in range(50):
 
-    dir = "./data/celeba_select"
-    save_dir = './data/celeba_results'
-    dirs_name = os.listdir("./data/celeba_select")  # 人名文件夹列表
+    dir = "./data/colorferet_jpg_crop"
+    save_dir = './data/colorferet_results'
+    dirs_name = os.listdir(dir)  # 人名文件夹列表
 
 
     for name in dirs_name:
