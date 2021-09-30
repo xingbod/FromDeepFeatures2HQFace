@@ -4,25 +4,27 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
 from shutil import copy
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
 
-from ModelZoo import loadStyleGAN2Model, loadArcfaceModel, loadArcfaceModel_xception
+from tf_utils import allow_memory_growth
+from ModelZoo import loadStyleGAN2Model, loadArcfaceModel, loadArcfaceModel_xception, loadArcfaceModel_inception
 
 from skimage import io
 from skimage.transform import resize
 import pickle
 
+allow_memory_growth()
 
-# lfw_dataset_path = "./data/lfw_select"
+# lfw_dataset_path = "./data/celeba_results/result1"
 # names_list = os.listdir(lfw_dataset_path)
 # print(names_list)
 #
 # for name in names_list:
-#     imgPair_path = os.path.join("./data/lfw_results2_classify", f"{name}")
-#     imgResult_path = os.path.join("./data/lfw_results/hkresult0", f"{name}")
+#     imgPair_path = os.path.join("./data/celeba_results2_classify", f"{name}")
+#     imgResult_path = os.path.join("./data/celeba_results/result1", f"{name}")
 #     if not os.path.exists(imgPair_path):
 #         os.mkdir(imgPair_path)
 #     # 保存原图
@@ -55,12 +57,12 @@ import pickle
 
 
 
-arcfacemodel = loadArcfaceModel_xception()
+arcfacemodel = loadArcfaceModel_inception()
 
-lfw_pairs_path = "./data/lfw_results2_classify"
+lfw_pairs_path = "./data/celeba_results1_classify"
 names_list = os.listdir(lfw_pairs_path)
 
-lfw_feature_path = "./data/lfw_158_features_3_xception3"
+lfw_feature_path = "./data/celeba_158_features_3_Xception_2"
 
 for name in names_list:
     img_path = os.path.join(lfw_pairs_path, name)
