@@ -1,6 +1,6 @@
 import numpy as np
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -15,7 +15,7 @@ import time
 from shutil import copy
 import random
 
-num_epochs = 1000
+num_epochs = 100000
 batch_size = 32
 # GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
 
@@ -27,7 +27,7 @@ g_clone = loadStyleGAN2Model()
 
 
 inp = tf.Variable(np.random.randn(1, 512), dtype=tf.float32)
-optimizer = optimizers.SGD(learning_rate=0.01)
+optimizer = optimizers.SGD(learning_rate=0.8)
 
 pre_loss = 0.0
 num = 0
@@ -79,16 +79,16 @@ for num_repeat in range(50):
                 loss = tf.reduce_mean(tf.square(tf.subtract(feature_new, feature_gt)), 1)
                 print("epoch %d: loss %f" % (i, loss))
 
-                if i % 10 == 0:
-                    Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
+                # if i % 10 == 0:
+                #     Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
             grads = tape.gradient(loss, [inp])
             optimizer.apply_gradients(grads_and_vars=zip(grads, [inp]))
 
-            new_loss = loss
-            if new_loss >= pre_loss:
-                num = num + 1
-            else:
-                pre_loss = new_fit
-                num = 0
-            if num >= 20:
-                break
+            # new_loss = loss
+            # if new_loss >= pre_loss:
+            #     num = num + 1
+            # else:
+            #     pre_loss = new_fit
+            #     num = 0
+            # if num >= 20:
+            #     break
