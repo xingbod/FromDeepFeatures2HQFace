@@ -1,4 +1,5 @@
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import numpy as np
 # import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -8,14 +9,13 @@ from tf_utils import allow_memory_growth
 
 allow_memory_growth()
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
 from skimage import io
 from skimage.transform import rescale, resize, downscale_local_mean
 from tensorflow.keras import Model, optimizers, layers, losses
-from ModelZoo import loadStyleGAN2Model, loadArcfaceModel
+from ModelZoo import loadStyleGAN2Model, loadArcfaceModel, loadArcfaceModel_xception
 from PIL import Image
 from stylegan2.utils import postprocess_images
 from load_models import load_generator
@@ -25,19 +25,19 @@ import tqdm
 
 
 # Genetic Algorithm Parameters
-big_batch_size = 16
+big_batch_size = 8
 one_batch_size = 16
 pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
-selection = 0.2     # 筛选前20
+selection = 0.3     # 筛选前20
 # mutation = 3. / (pop_size / 10)
-mutation = 3. / 32
+mutation = 10. / 32
 generations = 1000
 num_parents = int(pop_size * selection)
 num_children = pop_size - num_parents
 
 
-arcfacemodel = loadArcfaceModel()
+arcfacemodel = loadArcfaceModel_xception()
 g_clone = loadStyleGAN2Model()
 # model = laten2featureFinalModel()
 # print(model.summary())
@@ -105,20 +105,20 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 
 
-for num_repeat in range(50):
+for num_repeat in range(1):
 
-    dir = "./data/colorferet_jpg_crop"
-    save_dir = './data/colorferet_results'
+    dir = "./data/lfw_select"
+    save_dir = './data/lfw_results'
     dirs_name = os.listdir(dir)  # 人名文件夹列表
 
 
     for name in dirs_name:
         dir_path = os.path.join(dir, name)  # 人名目录
 
-        if not os.path.exists(save_dir + f"/result{num_repeat}"):
-            os.mkdir(save_dir + f"/result{num_repeat}")
+        if not os.path.exists(save_dir + f"/result{num_repeat+4}"):
+            os.mkdir(save_dir + f"/result{num_repeat+4}")
 
-        the_img_savepath = save_dir + f"/result{num_repeat}/{name}"
+        the_img_savepath = save_dir + f"/result{num_repeat+4}/{name}"
         if not os.path.exists(the_img_savepath):
             os.mkdir(the_img_savepath)
 
@@ -179,9 +179,8 @@ for num_repeat in range(50):
             # mutation = (3. / 32 + ((loss_mean - tau) / 32) * 5)
             # mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
 
-            while (i == 0):
+            if i == 0:
                 pre_fit = -best_fit
-                break
 
             time2 = time.time()
             time_gap = time2 - time1
