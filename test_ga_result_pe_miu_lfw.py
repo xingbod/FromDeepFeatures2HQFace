@@ -6,9 +6,9 @@ from tensorflow.python.framework import ops
 from shutil import copy
 from tf_utils import allow_memory_growth
 
-allow_memory_growth()
+# allow_memory_growth()
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -24,18 +24,18 @@ import random
 import tqdm
 from privacy_enhancing_miu import PrivacyEnhancingMIU
 # PrivacyEnhancing with MIU
-pemiu = PrivacyEnhancingMIU(block_size=32)
+pemiu = PrivacyEnhancingMIU(block_size=256)
 
 
 # Genetic Algorithm Parameters
-big_batch_size = 16
+big_batch_size = 8
 one_batch_size = 16
 pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
 selection = 0.2     # 筛选前20
 # mutation = 3. / (pop_size / 10)
 mutation = 3. / 32
-generations = 1000
+generations = 500
 num_parents = int(pop_size * selection)
 num_children = pop_size - num_parents
 
@@ -69,10 +69,10 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # shuffle each vector depending on the block size
     alt = pemiu.shuffle(feature_new)
     # reconstruct a genuine to reference vector alt[0]
-	feature_miu = np.zeros((pop_size, 512))
-	for ind in range(pop_size):
-		feature_miu[ind] = pemiu.reconstruct(truth_ph, alt[ind])
-######################################################################################		
+    feature_miu = np.zeros((pop_size, 512))
+    for ind in range(pop_size):
+        feature_miu[ind] = pemiu.reconstruct(truth_ph, alt[ind])
+######################################################################################
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_miu, truth_ph)), 1)     # 计算每一行feature和gt的fitness，越大越好
     # print(fitness[0:12])
     result = tf.math.top_k(fitness, k=pop_size)
@@ -119,18 +119,18 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 for num_repeat in range(5):
 
-    dir = "./data/colorferet_jpg_crop"
-    save_dir = './data/colorferet_results'
+    dir = "./data/lfw_select"
+    save_dir = './data/lfw_results'
     dirs_name = os.listdir(dir)  # 人名文件夹列表
 
 
     for name in dirs_name:
         dir_path = os.path.join(dir, name)  # 人名目录
 
-        if not os.path.exists(save_dir + f"/result{num_repeat}"):
-            os.mkdir(save_dir + f"/result{num_repeat}")
+        if not os.path.exists(save_dir + f"/result{num_repeat+1}"):
+            os.mkdir(save_dir + f"/result{num_repeat+1}")
 
-        the_img_savepath = save_dir + f"/result{num_repeat}/{name}"
+        the_img_savepath = save_dir + f"/result{num_repeat+1}/{name}"
         if not os.path.exists(the_img_savepath):
             os.mkdir(the_img_savepath)
 
@@ -147,7 +147,7 @@ for num_repeat in range(5):
         img = np.array(img)
         img = np.expand_dims(img, 0)
         truth_ph = arcfacemodel(img)
-		truth_ph = pemiu.shuffle(truth_ph[0].numpy())
+        truth_ph = pemiu.shuffle(truth_ph.numpy())
         # Initialize population array
         population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)
 
@@ -206,11 +206,11 @@ for num_repeat in range(5):
             if i % 5 == 0:
                 Image.fromarray(image_out, 'RGB').save(
                     the_img_savepath + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
-            new_fit = -best_fit
-            if new_fit >= pre_fit:
-                num = num + 1
-            else:
-                pre_fit = new_fit
-                num = 0
-            if num >= 20:
-                break
+            # new_fit = -best_fit
+            # if new_fit >= pre_fit:
+            #     num = num + 1
+            # else:
+            #     pre_fit = new_fit
+            #     num = 0
+            # if num >= 20:
+            #     break

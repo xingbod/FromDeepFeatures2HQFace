@@ -99,6 +99,7 @@ class PrivacyEnhancingMIU:
         """
         dim = ref_vec.shape[0]
         num_blocks = math.ceil(dim / self.block_size)
+        probe_vec = np.expand_dims(probe_vec, 0)
         cost_matrix = self.__create_cost_matrix(ref_vec, probe_vec, num_blocks)
 
         row_ind, assignment = linear_sum_assignment(cost_matrix)

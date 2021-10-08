@@ -14,8 +14,11 @@ from stylegan2.utils import postprocess_images
 import time
 from shutil import copy
 import random
+from privacy_enhancing_miu import PrivacyEnhancingMIU
 
-num_epochs = 100000
+pemiu = PrivacyEnhancingMIU(block_size=32)
+
+num_epochs = 500
 batch_size = 32
 # GLOBAL_BATCH_SIZE = batch_size * strategy.num_replicas_in_sync
 
@@ -26,19 +29,19 @@ g_clone = loadStyleGAN2Model()
 
 
 
-inp = tf.Variable(np.random.randn(1, 512), dtype=tf.float32)
 optimizer = optimizers.SGD(learning_rate=1.2)
 
 pre_loss = 0.0
 num = 0
 for num_repeat in range(50):
 
-    dir = "./data/celeba_select"
-    save_dir = './data/outputs/celeba_results_xb'
-    dirs_name = os.listdir("./data/celeba_select")  # 人名文件夹列表
+    dir = "./data/lfw_select"
+    save_dir = './data/outputs/lfw_results_xb'
+    dirs_name = os.listdir("./data/lfw_select")  # 人名文件夹列表
 
 
     for name in dirs_name:
+        inp = tf.Variable(np.random.randn(1, 512), dtype=tf.float32)
         dir_path = os.path.join(dir, name)  # 人名目录
 
         if not os.path.exists(save_dir + f"/result_SGD_v{num_repeat}"):
@@ -61,6 +64,7 @@ for num_repeat in range(50):
         img = np.array(img)
         img = np.expand_dims(img, 0)
         feature_gt = arcfacemodel(img)
+        truth_ph = pemiu.shuffle(feature_gt.numpy())
         # Initialize population array
         population = tf.Variable(np.random.randn(1, 512), dtype=tf.float32)
 
@@ -76,6 +80,8 @@ for num_repeat in range(50):
                 image_out_g = image_out_g.numpy()
                 image_out = tf.image.resize(image_out, size=(112, 112)) / 255.
                 feature_new = arcfacemodel(image_out)
+                feature_new = pemiu.shuffle(feature_new.numpy())
+
                 loss1 = tf.reduce_mean(tf.square(tf.subtract(feature_new, feature_gt)), 1)
                 loss2 = tf.math.abs(tf.reduce_mean(inp))
                 loss = loss1 + loss2
