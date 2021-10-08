@@ -5,7 +5,7 @@ import numpy as np
 
 
 def get_threshold(FAR_rate):
-    with open('./data/scores/celeba_imposter_score_Inception.pickle', 'rb') as f:
+    with open('./data/scores/colorferet_imposter_score_Inception.pickle', 'rb') as f:
         impost_score = np.array(pickle.load(f))
         impost_score_sorted = np.sort(impost_score, axis=0)
         threshold_inx = int(len(impost_score_sorted) * (1 - FAR_rate))
@@ -16,7 +16,7 @@ def get_threshold(FAR_rate):
 
 
 def get_normal_TAR(threshold):
-    with open('./data/scores/celeba_genuine_score_Inception.pickle', 'rb') as f:
+    with open('./data/scores/colorferet_genuine_score_Inception.pickle', 'rb') as f:
         genuine_score = np.array(pickle.load(f))
         num = np.sum(genuine_score > threshold)
         # print('length genuine_score = ', len(genuine_score))
@@ -24,7 +24,7 @@ def get_normal_TAR(threshold):
 
 
 def get_Type1_SAR(threshold):
-    with open('./data/scores/celeba_attack1_score_Inception.pickle', 'rb') as f:
+    with open('./data/scores/colorferet_attack1_score_Inception.pickle', 'rb') as f:
         attack1_score = np.array(pickle.load(f))
         num = np.sum(attack1_score > threshold)
         # print('length genuine_score = ', len(genuine_score))
@@ -32,7 +32,7 @@ def get_Type1_SAR(threshold):
 
 
 def get_Type2_SAR(threshold):
-    with open('./data/scores/celeba_attack2_score_Inception.pickle', 'rb') as f:
+    with open('./data/scores/colorferet_attack2_score_Inception.pickle', 'rb') as f:
         attack1_score = np.array(pickle.load(f))
         num = np.sum(attack1_score > threshold)
         # print('length genuine_score = ', len(genuine_score))

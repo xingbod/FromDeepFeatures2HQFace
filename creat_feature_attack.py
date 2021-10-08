@@ -17,14 +17,14 @@ from skimage.transform import resize
 import pickle
 
 allow_memory_growth()
-
-# lfw_dataset_path = "./data/celeba_results/result1"
+#
+# lfw_dataset_path = "./data/colorferet_jpg_crop"
 # names_list = os.listdir(lfw_dataset_path)
 # print(names_list)
 #
 # for name in names_list:
-#     imgPair_path = os.path.join("./data/celeba_results2_classify", f"{name}")
-#     imgResult_path = os.path.join("./data/celeba_results/result1", f"{name}")
+#     imgPair_path = os.path.join("./data/colorferet_classify", f"{name}")
+#     imgResult_path = os.path.join("./data/colorferet_results", f"{name}")
 #     if not os.path.exists(imgPair_path):
 #         os.mkdir(imgPair_path)
 #     # 保存原图
@@ -57,12 +57,12 @@ allow_memory_growth()
 
 
 
-arcfacemodel = loadArcfaceModel_inception()
+arcfacemodel = loadArcfaceModel_xception()
 
-lfw_pairs_path = "./data/celeba_results1_classify"
+lfw_pairs_path = "./data/colorferet_classify"
 names_list = os.listdir(lfw_pairs_path)
 
-lfw_feature_path = "./data/celeba_158_features_3_Xception_2"
+lfw_feature_path = "./data/colorferet_158_features_3_Xception_1"
 
 for name in names_list:
     img_path = os.path.join(lfw_pairs_path, name)
