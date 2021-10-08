@@ -1,6 +1,6 @@
 import numpy as np
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
 import logging
 logging.disable(30)# for disable the warnning in gradient tape
@@ -27,14 +27,14 @@ g_clone = loadStyleGAN2Model()
 
 
 inp = tf.Variable(np.random.randn(1, 512), dtype=tf.float32)
-optimizer = optimizers.SGD(learning_rate=0.8)
+optimizer = optimizers.SGD(learning_rate=1.2)
 
 pre_loss = 0.0
 num = 0
 for num_repeat in range(50):
 
     dir = "./data/celeba_select"
-    save_dir = './data/outputs/celeba_results'
+    save_dir = './data/outputs/celeba_results_xb'
     dirs_name = os.listdir("./data/celeba_select")  # 人名文件夹列表
 
 
@@ -76,11 +76,13 @@ for num_repeat in range(50):
                 image_out_g = image_out_g.numpy()
                 image_out = tf.image.resize(image_out, size=(112, 112)) / 255.
                 feature_new = arcfacemodel(image_out)
-                loss = tf.reduce_mean(tf.square(tf.subtract(feature_new, feature_gt)), 1)
-                print("epoch %d: loss %f" % (i, loss))
+                loss1 = tf.reduce_mean(tf.square(tf.subtract(feature_new, feature_gt)), 1)
+                loss2 = tf.math.abs(tf.reduce_mean(inp))
+                loss = loss1 + loss2
+                print("epoch %d: loss1 %f,loss2 %f,loss %f" % (i,loss1,loss2, loss))
 
-                # if i % 10 == 0:
-                #     Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
+                if i % 100 == 0:
+                    Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
             grads = tape.gradient(loss, [inp])
             optimizer.apply_gradients(grads_and_vars=zip(grads, [inp]))
 
