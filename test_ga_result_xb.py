@@ -140,8 +140,8 @@ def main(_):
 		for m in img_name_list:
 			copy(os.path.join(dir_path, m), the_img_savepath)
 		# img_name = random.sample(img_name_list, 1)      # 随机选一张当作ground truth
-		img_name = img_name_list[0]  # 随机选一张当作ground truth
-		img_path = os.path.join(dir_path, img_name[0])
+		# img_name = img_name_list[0]  # 随机选一张当作ground truth
+		img_path = os.path.join(dir_path, img_name_list[0])
 		img = io.imread(img_path)
 		img_gt = np.array(img)
 		Image.fromarray(img_gt, 'RGB').save(the_img_savepath + r'/gt_' + username + '.png')
