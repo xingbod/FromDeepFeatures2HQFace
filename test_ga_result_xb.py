@@ -128,7 +128,7 @@ def main(_):
 		features_sorted = tf.gather(feature_new, top_ind)  # 将feature按照fitness的大小排序
 		# print(features_sorted[0:12])
 		# print(population_sorted[0:12])
-		population_sorted[0,:] = opt(population_sorted[0,:])
+		population_sorted[0,:] = opt(population_sorted[0,:])# update z by SGD again, joint with GA
 		parents = tf.slice(population_sorted, [0, 0], [num_parents, features])  # 拿出前num_parents个population作为parents
 		# print(parents)
 		# Get offspring
