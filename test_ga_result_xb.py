@@ -18,7 +18,6 @@ import time
 import random
 import tqdm
 
-flags.DEFINE_string('cfg_path', './configs/iom_res50.yaml', 'config file path')
 flags.DEFINE_string('gpu', '0', 'which gpu to use')
 flags.DEFINE_string('extractor', 'res50', 'which extractor backbone to use (res50,xception,incep)')
 
@@ -95,8 +94,8 @@ def main(_):
     logging.info("os.environ['CUDA_VISIBLE_DEVICES']: "+ os.environ['CUDA_VISIBLE_DEVICES'])
 
     allow_memory_growth()
-	# dataset para. 
-	dir_source = "./data/lfw_select"
+    # dataset para.
+    dir_source = "./data/lfw_select"
     save_dir = './data/lfw_results'
     dirs_name = os.listdir(dir_source)  # 人名文件夹列表
 
@@ -112,19 +111,20 @@ def main(_):
     generations = 1000
     num_parents = int(pop_size * selection)
     num_children = pop_size - num_parents
-	theta = 0.6
+    theta = 0.6
     if FLAGS.extractor == 'res50':
-         arcfacemodel = loadArcfaceModel()
-	if FLAGS.extractor == 'xception':
-         arcfacemodel = loadArcfaceModel_xception()
-	if FLAGS.extractor == 'incep':
-         arcfacemodel = loadArcfaceModel_inception()
+        arcfacemodel = loadArcfaceModel()
+    if FLAGS.extractor == 'xception':
+        arcfacemodel = loadArcfaceModel_xception()
+    if FLAGS.extractor == 'incep':
+        arcfacemodel = loadArcfaceModel_inception()
+
     g_clone = loadStyleGAN2Model()
     # model = laten2featureFinalModel()
     # print(model.summary())
-	num_repeat = 0 
+	num_repeat = 0
 	for username in dirs_name:
-        dir_path = os.path.join(dir, username)  # 人名目录
+        dir_path = os.path.join(dir_source, username)  # 人名目录
 
         if not os.path.exists(save_dir + f"/result{num_repeat+4}"):
             os.mkdir(save_dir + f"/result{num_repeat+4}")
@@ -214,7 +214,7 @@ def main(_):
 				population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)# random init again
             if num >= 20 and new_fit < theta:
                 break
-    
+
 
 
 if __name__ == '__main__':
