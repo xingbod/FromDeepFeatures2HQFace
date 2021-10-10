@@ -46,15 +46,18 @@ def main(_):
 	features = 512  # 个体大小
 	selection = 0.3  # 筛选前20
 	# mutation = 3. / (pop_size / 10)
-	mutation = 10. / 32
+	mutation_init = 0.1#10%
+	mutation = mutation_init #10%
 	generations = 1000
 	num_parents = int(pop_size * selection)
 	num_children = pop_size - num_parents
 	theta = 0.6
 
 	# optimizer
-	num_epochs = 200
-	optimizer = optimizers.SGD(learning_rate=0.9)
+	num_epochs = 10
+	# optimizer = optimizers.SGD(learning_rate=0.9)
+	# optimizer = tf.keras.optimizers.Adam(0.9)
+	optimizer = tf.keras.optimizers.SGD(0.9)
 
 	if FLAGS.extractor == 'res50':
 		arcfacemodel = loadArcfaceModel()
@@ -69,31 +72,37 @@ def main(_):
 	# print(model.summary())
 	def opt(init_individial):
 		# Initialize population array
-		init_individial_inp= tf.Variable(init_individial, dtype=tf.float32)
+		# print(init_individial.shape)
+		init_individial_inp= tf.Variable(init_individial.numpy())
+		# print(init_individial_inp)
+		# init_individial_inp = tf.expand_dims(init_individial_inp, 0)
 		# Run through generations
-		pre_fit = 0.0
-		new_fit = 0.0
-		num = 0
+		# pre_fit = 0.0
+		# new_fit = 0.0
+		# num = 0
 		for i in range(num_epochs):
 			with tf.GradientTape() as tape:
+				tape.watch(init_individial_inp)
 				image_out = g_clone([init_individial_inp, []], training=False, truncation_psi=0.5)
 				image_out = postprocess_images(image_out)
-				image_out_g = tf.cast(image_out, dtype=tf.dtypes.uint8)
-				image_out_g = image_out_g.numpy()
+				# image_out_g = tf.cast(image_out, dtype=tf.dtypes.uint8)
+				# image_out_g = image_out_g.numpy()
 				image_out = tf.image.resize(image_out, size=(112, 112)) / 255.
 				feature_new = arcfacemodel(image_out)
 
 				loss1 = tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
-				loss2 = tf.math.abs(tf.reduce_mean(init_individial_inp))
+				loss2 = tf.math.abs(tf.reduce_mean(init_individial_inp,1))
 				loss = loss1 + loss2
-				print("epoch %d: loss1 %f,loss2 %f,loss %f" % (i, loss1, loss2, loss))
+				print("epoch %d: loss1[0] %f,loss2[0] %f,total loss[0] %f" % (i, loss1[0], loss2[0], loss[0]))
 
 				# if i % 50 == 0:
 				# 	Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
-			grads = tape.gradient(loss, [init_individial_inp])
-			optimizer.apply_gradients(grads_and_vars=zip(grads, [init_individial_inp]))
-			return init_individial_inp.numpy()
-	def GAalgo(population, crossover_mat_ph, mutation_val_ph):
+				grads = tape.gradient(loss, init_individial_inp)
+				# print(grads.shape)
+				init_individial_inp = init_individial_inp - grads * 0.1
+				# optimizer.apply_gradients(grads_and_vars=zip(grads, init_individial_inp))
+		return init_individial_inp.numpy()
+	def GAalgo(population, crossover_mat_ph, mutation_val_ph,generation):
 		# Calculate fitness (MSE)
 		# population -> v
 		# print("xxxx*******1",population)
@@ -128,7 +137,11 @@ def main(_):
 		features_sorted = tf.gather(feature_new, top_ind)  # 将feature按照fitness的大小排序
 		# print(features_sorted[0:12])
 		# print(population_sorted[0:12])
-		population_sorted[0,:] = opt(population_sorted[0,:])# update z by SGD again, joint with GA
+		# if generation % 20 ==0:
+		# 	new_sorted = tf.concat([opt(population_sorted[:2]), population_sorted[2:]],
+		# 						   0)  # update z by SGD again, joint with GA
+		# else:
+		# 	new_sorted = population_sorted
 		parents = tf.slice(population_sorted, [0, 0], [num_parents, features])  # 拿出前num_parents个population作为parents
 		# print(parents)
 		# Get offspring
@@ -201,7 +214,7 @@ def main(_):
 
 			# Run GA step
 			# TF2.0
-			population, best_individual, best_val, fitness, best_img = GAalgo(population, crossover_mat, mutation_values)
+			population, best_individual, best_val, fitness, best_img = GAalgo(population, crossover_mat, mutation_values,i)
 			# print(best_individual[0:5])
 			# feed_dict = {truth_ph: truth.reshape([1, features]),
 			#              crossover_mat_ph: crossover_mat,
@@ -236,9 +249,11 @@ def main(_):
 			else:
 				pre_fit = new_fit
 				num = 0
+				mutation = mutation_init
 			# validate if can break or re-init
-			if num >= 20 and new_fit > theta:
-				population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)  # random init again
+			if num >= 10 and new_fit > theta:
+				print('re-init mutation rate')
+				mutation = mutation * 2
 			if num >= 20 and new_fit < theta:
 				break
 
