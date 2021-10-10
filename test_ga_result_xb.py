@@ -52,6 +52,10 @@ def main(_):
 	num_children = pop_size - num_parents
 	theta = 0.6
 
+	# optimizer
+	num_epochs = 200
+	optimizer = optimizers.SGD(learning_rate=0.9)
+
 	if FLAGS.extractor == 'res50':
 		arcfacemodel = loadArcfaceModel()
 	if FLAGS.extractor == 'xception':
@@ -63,9 +67,33 @@ def main(_):
 
 	# model = laten2featureFinalModel()
 	# print(model.summary())
+	def opt(init_individial):
+		# Initialize population array
+		init_individial_inp= tf.Variable(init_individial, dtype=tf.float32)
+		# Run through generations
+		pre_fit = 0.0
+		new_fit = 0.0
+		num = 0
+		for i in range(num_epochs):
+			with tf.GradientTape() as tape:
+				image_out = g_clone([init_individial_inp, []], training=False, truncation_psi=0.5)
+				image_out = postprocess_images(image_out)
+				image_out_g = tf.cast(image_out, dtype=tf.dtypes.uint8)
+				image_out_g = image_out_g.numpy()
+				image_out = tf.image.resize(image_out, size=(112, 112)) / 255.
+				feature_new = arcfacemodel(image_out)
 
-	def GAalgo(population, crossover_mat_ph,
-			   mutation_val_ph):
+				loss1 = tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
+				loss2 = tf.math.abs(tf.reduce_mean(init_individial_inp))
+				loss = loss1 + loss2
+				print("epoch %d: loss1 %f,loss2 %f,loss %f" % (i, loss1, loss2, loss))
+
+				# if i % 50 == 0:
+				# 	Image.fromarray(image_out_g[0], 'RGB').save(the_img_savepath + '/out' + str(i) + f'_{loss[0].numpy()}' + '.png')
+			grads = tape.gradient(loss, [init_individial_inp])
+			optimizer.apply_gradients(grads_and_vars=zip(grads, [init_individial_inp]))
+			return init_individial_inp.numpy()
+	def GAalgo(population, crossover_mat_ph, mutation_val_ph):
 		# Calculate fitness (MSE)
 		# population -> v
 		# print("xxxx*******1",population)
@@ -92,8 +120,7 @@ def main(_):
 		best_val = tf.reduce_max(top_vals)  # 选出最好的fitness
 		# best_ind = tf.argmax(top_vals, 0)       # 拿到最好的fitness的索引
 		# print(top_ind[0])
-		best_individual = tf.gather(population, top_ind[
-			0])  # 拿到最好的一个latent code
+		best_individual = tf.gather(population, top_ind[0])  # 拿到最好的一个latent code
 		best_img = image_out[top_ind[0]]  # 拿到最好的一张图片
 		## }
 		# Get parents
@@ -101,6 +128,7 @@ def main(_):
 		features_sorted = tf.gather(feature_new, top_ind)  # 将feature按照fitness的大小排序
 		# print(features_sorted[0:12])
 		# print(population_sorted[0:12])
+		population_sorted[0,:] = opt(population_sorted[0,:])
 		parents = tf.slice(population_sorted, [0, 0], [num_parents, features])  # 拿出前num_parents个population作为parents
 		# print(parents)
 		# Get offspring
@@ -128,7 +156,6 @@ def main(_):
 	num_repeat = 0
 	for username in dirs_name:
 		dir_path = os.path.join(dir_source, username)  # 人名目录
-
 		if not os.path.exists(save_dir + f"/result{num_repeat + 4}"):
 			os.mkdir(save_dir + f"/result{num_repeat + 4}")
 
@@ -164,9 +191,9 @@ def main(_):
 			crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
 			for pop_ix in range(num_children):
 				if crossover_point[pop_ix] <= crossover_point2[pop_ix]:
-					crossover_mat[pop_ix, crossover_point[pop_ix]:                    crossover_point2[pop_ix]] = 0.  # 将每行的交换点前面的元素置为0
+					crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.  # 将每行的交换点前面的元素置为0
 				else:
-					crossover_mat[pop_ix, crossover_point2[pop_ix]:                    crossover_point[pop_ix]] = 0.
+					crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
 			# Generate mutation probability matrices
 			mutation_prob_mat = np.random.uniform(size=[num_children, features])
 			mutation_values = np.random.normal(size=[num_children, features])
@@ -200,9 +227,7 @@ def main(_):
 
 			best_fit_numpy = -(best_fit.numpy())
 			print('Generation: {}, time: {:.2}, mutation rate: {}, Best Fitness (lowest MSE): {:.4}'.format(
-				i, time_gap,
-				mutation,
-				-best_fit))
+				i, time_gap, mutation, -best_fit))
 			if i % 5 == 0:
 				Image.fromarray(image_out, 'RGB').save(the_img_savepath + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
 			new_fit = -best_fit
@@ -216,6 +241,7 @@ def main(_):
 				population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)  # random init again
 			if num >= 20 and new_fit < theta:
 				break
+
 
 if __name__ == '__main__':
 	app.run(main)
