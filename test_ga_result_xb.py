@@ -43,7 +43,7 @@ def main(_):
 		dirs_name = os.listdir(dir_source)  # 人名文件夹列表
 		# filter segemnt
 		dirs_name = dirs_name[(FLAGS.lfw_segment) * 10:(FLAGS.lfw_segment + 1) * 10]
-	if FLAGS.dataset == 'lfw':
+	if FLAGS.dataset == 'color':
 		pass
 	# Genetic Algorithm Parameters
 	big_batch_size = 16
