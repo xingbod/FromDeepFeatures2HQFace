@@ -21,6 +21,7 @@ import tqdm
 flags.DEFINE_string('gpu', '0', 'which gpu to use')
 flags.DEFINE_string('extractor', 'res50', 'which extractor backbone to use (res50,xception,incep)')
 flags.DEFINE_integer('lfw_segment', 0, 'which segment use in the reconstruction （0-> 0:10,1->10-20,... 5->40-50 ）')
+flags.DEFINE_string('dataset', 'lfw', 'which dataset to use (lfw,color)')
 
 
 def main(_):
@@ -36,12 +37,14 @@ def main(_):
 
 	allow_memory_growth()
 	# dataset para.
-	dir_source = "./data/lfw_select"
-	save_dir = './data/lfw_results'
-	dirs_name = os.listdir(dir_source)  # 人名文件夹列表
-	# filter segemnt
-	dirs_name = dirs_name[(FLAGS.lfw_segment)*10:(FLAGS.lfw_segment+1)*10]
-
+	if FLAGS.dataset == 'lfw':
+		dir_source = "./data/lfw_select"
+		save_dir = './data/lfw_results'
+		dirs_name = os.listdir(dir_source)  # 人名文件夹列表
+		# filter segemnt
+		dirs_name = dirs_name[(FLAGS.lfw_segment) * 10:(FLAGS.lfw_segment + 1) * 10]
+	if FLAGS.dataset == 'lfw':
+		pass
 	# Genetic Algorithm Parameters
 	big_batch_size = 16
 	one_batch_size = 16
