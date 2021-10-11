@@ -20,6 +20,7 @@ import tqdm
 
 flags.DEFINE_string('gpu', '0', 'which gpu to use')
 flags.DEFINE_string('extractor', 'res50', 'which extractor backbone to use (res50,xception,incep)')
+flags.DEFINE_integer('lfw_segment', 0, 'which segment use in the reconstruction （0-> 0:10,1->10-20,... 5->40-50 ）')
 
 
 def main(_):
@@ -38,6 +39,8 @@ def main(_):
 	dir_source = "./data/lfw_select"
 	save_dir = './data/lfw_results'
 	dirs_name = os.listdir(dir_source)  # 人名文件夹列表
+	# filter segemnt
+	dirs_name = dirs_name[(FLAGS.lfw_segment)*10:(FLAGS.lfw_segment+1)*10]
 
 	# Genetic Algorithm Parameters
 	big_batch_size = 16
@@ -48,7 +51,7 @@ def main(_):
 	# mutation = 3. / (pop_size / 10)
 	mutation_init = 0.1#10%
 	mutation = mutation_init #10%
-	generations = 1000
+	generations = 150
 	num_parents = int(pop_size * selection)
 	num_children = pop_size - num_parents
 	theta = 0.6
@@ -166,6 +169,7 @@ def main(_):
 		# population.assign(new_population)
 		return new_population, best_individual, best_val, fitness, best_img
 
+
 	num_repeat = 0
 	for username in dirs_name:
 		dir_path = os.path.join(dir_source, username)  # 人名目录
@@ -249,12 +253,13 @@ def main(_):
 			else:
 				pre_fit = new_fit
 				num = 0
-				mutation = mutation_init
+				# mutation = mutation_init
 			# validate if can break or re-init
-			if num >= 10 and new_fit > theta:
-				print('re-init mutation rate')
-				mutation = mutation * 2
-			if num >= 20 and new_fit < theta:
+			# if num >= 10 and new_fit > theta:
+			# 	print('re-init mutation rate')
+			# 	mutation = mutation * 2
+			# if num >= 20 and new_fit < theta:
+			if num >= 20:
 				break
 
 
