@@ -184,7 +184,7 @@ def main(_):
 	for num_repeat in range(3):
 		for username in dirs_name:
 			dir_path = os.path.join(dir_source, username)  # 人名目录
-			if not os.path.exists(save_dir + f"/result{num_repeat}"):
+			if not os.path.exists(save_dir + f"/result_seg{FLAGS.dataset_segment}_{num_repeat}"):
 				os.mkdir(save_dir + f"/result{num_repeat}")
 
 			the_img_savepath = save_dir + f"/result_seg{FLAGS.dataset_segment}_{num_repeat}/{username}"
