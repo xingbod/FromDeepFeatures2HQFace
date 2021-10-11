@@ -20,7 +20,7 @@ import tqdm
 
 flags.DEFINE_string('gpu', '0', 'which gpu to use')
 flags.DEFINE_string('extractor', 'res50', 'which extractor backbone to use (res50,xception,incep)')
-flags.DEFINE_integer('lfw_segment', 0, 'which segment use in the reconstruction （0-> 0:10,1->10-20,... 5->40-50 ）')
+flags.DEFINE_integer('dataset_segment', 0, 'which segment use in the reconstruction （0-> 0:10,1->10-20,... 5->40-50 ）')
 flags.DEFINE_string('dataset', 'lfw', 'which dataset to use (lfw,color)')
 
 
@@ -40,11 +40,19 @@ def main(_):
 	if FLAGS.dataset == 'lfw':
 		dir_source = "./data/lfw_select"
 		save_dir = './data/lfw_results'
+		if not os.path.exists(save_dir):
+			os.mkdir(save_dir)
 		dirs_name = os.listdir(dir_source)  # 人名文件夹列表
 		# filter segemnt
-		dirs_name = dirs_name[(FLAGS.lfw_segment) * 10:(FLAGS.lfw_segment + 1) * 10]
+		dirs_name = dirs_name[(FLAGS.dataset_segment) * 10:(FLAGS.dataset_segment + 1) * 10]
 	if FLAGS.dataset == 'color':
-		pass
+		dir_source = './data/colorferet_jpg_crop_50'
+		save_dir = './data/colorferet_results'
+		if not os.path.exists(save_dir):
+			os.mkdir(save_dir)
+		dirs_name = os.listdir(dir_source)  # 人名文件夹列表
+		# filter segemnt
+		dirs_name = dirs_name[(FLAGS.dataset_segment) * 10:(FLAGS.dataset_segment + 1) * 10]
 	# Genetic Algorithm Parameters
 	big_batch_size = 16
 	one_batch_size = 16
@@ -173,97 +181,97 @@ def main(_):
 		return new_population, best_individual, best_val, fitness, best_img
 
 
-	num_repeat = 0
-	for username in dirs_name:
-		dir_path = os.path.join(dir_source, username)  # 人名目录
-		if not os.path.exists(save_dir + f"/result{num_repeat + 4}"):
-			os.mkdir(save_dir + f"/result{num_repeat + 4}")
+	for num_repeat in range(3):
+		for username in dirs_name:
+			dir_path = os.path.join(dir_source, username)  # 人名目录
+			if not os.path.exists(save_dir + f"/result{num_repeat}"):
+				os.mkdir(save_dir + f"/result{num_repeat}")
 
-		the_img_savepath = save_dir + f"/result{num_repeat + 4}/{username}"
-		if not os.path.exists(the_img_savepath):
-			os.mkdir(the_img_savepath)
+			the_img_savepath = save_dir + f"/result_seg{FLAGS.dataset_segment}_{num_repeat}/{username}"
+			if not os.path.exists(the_img_savepath):
+				os.mkdir(the_img_savepath)
 
-		img_name_list = os.listdir(dir_path)
-		for m in img_name_list:
-			copy(os.path.join(dir_path, m), the_img_savepath)
-		# img_name = random.sample(img_name_list, 1)      # 随机选一张当作ground truth
-		# img_name = img_name_list[0]  # 随机选一张当作ground truth
-		img_path = os.path.join(dir_path, img_name_list[0])
-		img = io.imread(img_path)
-		img_gt = np.array(img)
-		Image.fromarray(img_gt, 'RGB').save(the_img_savepath + r'/gt_' + username + '.png')
-		img = resize(img, (112, 112), anti_aliasing=True)
-		img = np.array(img)
-		img = np.expand_dims(img, 0)
-		truth_ph = arcfacemodel(img)
-		# Initialize population array
-		population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)
-		# Run through generations
-		pre_fit = 0.0
-		new_fit = 0.0
-		num = 0
-		for i in range(generations):
-			# print(population[0:12])
-			time1 = time.time()
-			# Create cross-over matrices for plugging in.
-			crossover_mat = np.ones(shape=[num_children, features])  # 交换矩阵
-			crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
-			crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
-			for pop_ix in range(num_children):
-				if crossover_point[pop_ix] <= crossover_point2[pop_ix]:
-					crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.  # 将每行的交换点前面的元素置为0
+			img_name_list = os.listdir(dir_path)
+			for m in img_name_list:
+				copy(os.path.join(dir_path, m), the_img_savepath)
+			# img_name = random.sample(img_name_list, 1)      # 随机选一张当作ground truth
+			# img_name = img_name_list[0]  # 随机选一张当作ground truth
+			img_path = os.path.join(dir_path, img_name_list[0])
+			img = io.imread(img_path)
+			img_gt = np.array(img)
+			Image.fromarray(img_gt, 'RGB').save(the_img_savepath + r'/gt_' + username + '.png')
+			img = resize(img, (112, 112), anti_aliasing=True)
+			img = np.array(img)
+			img = np.expand_dims(img, 0)
+			truth_ph = arcfacemodel(img)
+			# Initialize population array
+			population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)
+			# Run through generations
+			pre_fit = 0.0
+			new_fit = 0.0
+			num = 0
+			for i in range(generations):
+				# print(population[0:12])
+				time1 = time.time()
+				# Create cross-over matrices for plugging in.
+				crossover_mat = np.ones(shape=[num_children, features])  # 交换矩阵
+				crossover_point = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
+				crossover_point2 = np.random.choice(np.arange(1, features - 1, step=1), num_children)  # 选取每行的交换点
+				for pop_ix in range(num_children):
+					if crossover_point[pop_ix] <= crossover_point2[pop_ix]:
+						crossover_mat[pop_ix, crossover_point[pop_ix]:crossover_point2[pop_ix]] = 0.  # 将每行的交换点前面的元素置为0
+					else:
+						crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
+				# Generate mutation probability matrices
+				mutation_prob_mat = np.random.uniform(size=[num_children, features])
+				mutation_values = np.random.normal(size=[num_children, features])
+				mutation_values[mutation_prob_mat >= mutation] = 0  # 突变矩阵
+
+				# Run GA step
+				# TF2.0
+				population, best_individual, best_val, fitness, best_img = GAalgo(population, crossover_mat, mutation_values,i)
+				# print(best_individual[0:5])
+				# feed_dict = {truth_ph: truth.reshape([1, features]),
+				#              crossover_mat_ph: crossover_mat,
+				#              mutation_val_ph: mutation_values}
+				image_out = tf.cast(best_img, dtype=tf.dtypes.uint8)
+				image_out = image_out.numpy()
+				# image_out = image_out / 255
+				# print(image_out)
+				# if i % 5 == 0:
+				tau = 0.5
+				best_fit = tf.reduce_max(fitness)  # fitness是负的，越大越好
+				# loss_mean = -tf.reduce_mean(fitness)        # 整个population的平均loss，越小越好
+				# loss_history[i+1] = loss_mean
+				# print(loss_history[i+1])
+				# mutation = (3. / 32 + ((loss_mean - tau) / 32) * 5)
+				# mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
+
+				if i == 0:
+					pre_fit = -best_fit
+
+				time2 = time.time()
+				time_gap = time2 - time1
+
+				best_fit_numpy = -(best_fit.numpy())
+				print('Generation: {}, time: {:.2}, mutation rate: {}, Best Fitness (lowest MSE): {:.4}'.format(
+					i, time_gap, mutation, -best_fit))
+				if i % 5 == 0:
+					Image.fromarray(image_out, 'RGB').save(the_img_savepath + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
+				new_fit = -best_fit
+				if new_fit >= pre_fit:
+					num = num + 1
 				else:
-					crossover_mat[pop_ix, crossover_point2[pop_ix]:crossover_point[pop_ix]] = 0.
-			# Generate mutation probability matrices
-			mutation_prob_mat = np.random.uniform(size=[num_children, features])
-			mutation_values = np.random.normal(size=[num_children, features])
-			mutation_values[mutation_prob_mat >= mutation] = 0  # 突变矩阵
-
-			# Run GA step
-			# TF2.0
-			population, best_individual, best_val, fitness, best_img = GAalgo(population, crossover_mat, mutation_values,i)
-			# print(best_individual[0:5])
-			# feed_dict = {truth_ph: truth.reshape([1, features]),
-			#              crossover_mat_ph: crossover_mat,
-			#              mutation_val_ph: mutation_values}
-			image_out = tf.cast(best_img, dtype=tf.dtypes.uint8)
-			image_out = image_out.numpy()
-			# image_out = image_out / 255
-			# print(image_out)
-			# if i % 5 == 0:
-			tau = 0.5
-			best_fit = tf.reduce_max(fitness)  # fitness是负的，越大越好
-			# loss_mean = -tf.reduce_mean(fitness)        # 整个population的平均loss，越小越好
-			# loss_history[i+1] = loss_mean
-			# print(loss_history[i+1])
-			# mutation = (3. / 32 + ((loss_mean - tau) / 32) * 5)
-			# mutation = mutation.numpy() + (loss_history[i+1] - loss_history[i]) * 0.1
-
-			if i == 0:
-				pre_fit = -best_fit
-
-			time2 = time.time()
-			time_gap = time2 - time1
-
-			best_fit_numpy = -(best_fit.numpy())
-			print('Generation: {}, time: {:.2}, mutation rate: {}, Best Fitness (lowest MSE): {:.4}'.format(
-				i, time_gap, mutation, -best_fit))
-			if i % 5 == 0:
-				Image.fromarray(image_out, 'RGB').save(the_img_savepath + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
-			new_fit = -best_fit
-			if new_fit >= pre_fit:
-				num = num + 1
-			else:
-				pre_fit = new_fit
-				num = 0
-				# mutation = mutation_init
-			# validate if can break or re-init
-			# if num >= 10 and new_fit > theta:
-			# 	print('re-init mutation rate')
-			# 	mutation = mutation * 2
-			# if num >= 20 and new_fit < theta:
-			if num >= 20:
-				break
+					pre_fit = new_fit
+					num = 0
+					# mutation = mutation_init
+				# validate if can break or re-init
+				# if num >= 10 and new_fit > theta:
+				# 	print('re-init mutation rate')
+				# 	mutation = mutation * 2
+				# if num >= 20 and new_fit < theta:
+				if num >= 20:
+					break
 
 
 if __name__ == '__main__':
