@@ -22,7 +22,7 @@ If you have download limit by google drive, you can also download [styleGan2 pre
 
 step1.Download pretrained models：StyleGan2 and Resnet50  
 
-step2.Run `python test_ga_result2.py  
+step2.Run `python test_ga_result2.py`   
 
 step3. check results in './data/our_results  
 
