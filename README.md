@@ -16,16 +16,15 @@ If you have download limit by google drive, you can also download styleGan2 pret
 
 
 ##  Usage（Test with our images）：
-step1.Download pretrained models：StyleGan2 and Resnet50/n
-step2.Run `python test_ga_result2.py/n
-step3. check results in './data/our_results'/n
+step1.Download pretrained models：StyleGan2 and Resnet50
+step2.Run `python test_ga_result2.py
+step3. check results in './data/our_results
 
 
 ##  Usage（Test with your images）：
 if you Download this pretrain models in Usage1, skip step1
-
-step1.Download pretrained models：StyleGan2 and Resnet50.
-step2.Create a new folder and put you pictures in it and create a new folder to save the results.
+step1.Download pretrained models：StyleGan2 and Resnet50
+step2.Create a new folder and put you pictures in it and create a new folder to save the results
 step3. Modify here in **demo.py**
 ```python
 img_dir = 'create a new folder, put your pictures in it'
