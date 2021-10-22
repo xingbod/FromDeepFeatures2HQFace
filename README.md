@@ -1,4 +1,4 @@
-﻿# Reconstructing High-Quality Face Image from Deep Features
+# Reconstructing High-Quality Face Image from Deep Features
 
 this is a tensorflow implementation of the paper " Reconstructing High-Quality Face Image from Deep Features "
 
