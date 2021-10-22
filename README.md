@@ -1,8 +1,10 @@
-﻿@[TOC](Reconstructing High-Quality Face Image from Deep Features)
+﻿# Reconstructing High-Quality Face Image from Deep Features
 
 this is a tensorflow implementation of the paper " Reconstructing High-Quality Face Image from Deep Features "
 
 <img src="https://github.com/charlesLucky/auto_decoder_encoder_tf_2/blob/main/data/reconstruction.png" >
+
+
 ## Requirements
 Before running the program, make sure that there are dependent packages required by the program in your environment：python3, tensorflow2, numpy, shutil...
 
