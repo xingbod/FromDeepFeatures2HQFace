@@ -1,49 +1,32 @@
-# stylegan2-tf-2.x
-* This is tensorflow 2.0 based keras subclassing reimplementation of official [StyleGAN2 Repo](https://github.com/NVlabs/stylegan2)
+﻿@[TOC](Reconstructing High-Quality Face Image from Deep Features)
 
-## Inference from official weights
-* Please check [how_to_extract_official_weights.md](./how_to_extract_official_weights.md)
+this is a tensorflow implementation of the paper " Reconstructing High-Quality Face Image from Deep Features "
 
-| Official repo result | Official weight copied result from this repo |
-| :---: | :---: |
-| ![official_result] | ![restored_result] |
+<img src="https://github.com/charlesLucky/auto_decoder_encoder_tf_2/blob/main/data/reconstruction.png" >
+## Requirements
+Before running the program, make sure that there are dependent packages required by the program in your environment：python3, tensorflow2, numpy, shutil...
 
-## Training on 256x256
-* batch size 32
-* around 300k steps
 
-| d_loss | g_loss |
-| :---: | :---: |
-| ![256x256_d_loss]| ![256x256_g_loss]|
 
-* result samples
+## Pretrained Models
+You can download styleGan2 pretrained model from google drive..., and down load the feature extractor pretrained model Resnet-50 from google drive...
+If you have download limit by google drive, you can also download styleGan2 pretrained model from baidu drive..., and down load the feature extractor pretrained model Resnet-50 from baidu drive...
 
-| | | |
-| :---: | :---: | :---: |
-| ![256x256_result_0]| ![256x256_result_1]| ![256x256_result_2]|
 
-## Using custom data
-* Create dataset(tf.data.Dataset) loader which returns 
-  * shape: `[None, 3, res, res]` where `res` is desired image resolution
-  * image value range: `[-1, +1]`
- 
-## Etc
-### Using with pycharm
-* If .bashrc file's paths don't work in pycharm environment (e.g. `nvcc -h`), open pycharm with following
-```bash
-# move to pycharm installed location (location may vary)
-moono@moono-ubuntu:~$ cd .local/share/JetBrains/Toolbox/apps/PyCharm-P/ch-0/201.7846.77/bin/
+##  Usage（Test with our images）：
+step1.Download pretrained models：StyleGan2 and Resnet50
+step2.Run `python test_ga_result2.py`
+step3. check results in './data/our_results'
 
-# launch pycharm with .bashrc 
-moono@moono-ubuntu:~/.local/share/JetBrains/Toolbox/apps/PyCharm-P/ch-0/201.7846.77/bin$ bash pycharm.sh
+
+##  Usage（Test with your images）：
+if you Download this pretrain models in Usage1, skip step1
+
+step1.Download pretrained models：StyleGan2 and Resnet50.
+step2.Create a new folder and put you pictures in it and create a new folder to save the results.
+step3. Modify here in **demo.py**
+```python
+img_dir = 'create a new folder, put your pictures in it'
+save_dir = 'the path of you save results'
 ```
-
-[loss_tensorboard]: assets/tf-keras-stylegan2-loss.PNG
-[generation_tensorboard]: assets/tf-keras-stylegan2-fake-images.PNG
-[official_result]: assets/seed6600-official.png
-[restored_result]: assets/seed6600-restored.png
-[256x256_d_loss]: assets/d_loss_256x256.png
-[256x256_g_loss]: assets/g_loss_256x256.png
-[256x256_result_0]: assets/out_256x256_0.png
-[256x256_result_1]: assets/out_256x256_1.png
-[256x256_result_2]: assets/out_256x256_2.png# auto_decoder_encoder_tf_2
+step4.Run `python demo.py` and check results in the folder that you create to saving the results
