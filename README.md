@@ -13,7 +13,7 @@ Before running the program, make sure that there are dependent packages required
 
 ## Pretrained Models  
 
-You can download [styleGan2 pretrained model](https://drive.google.com/drive/folders/1CfeLX2ckWq9NJwm8M0B00_hBdze7NOWq?usp=sharing) from google drive(https://drive.google.com/drive/folders/1CfeLX2ckWq9NJwm8M0B00_hBdze7NOWq?usp=sharing), and down load the feature extractor [pretrained model Resnet-50] from google drive  
+You can download [styleGan2 pretrained model](https://drive.google.com/drive/folders/1CfeLX2ckWq9NJwm8M0B00_hBdze7NOWq?usp=sharing) from google drive, and down load the feature extractor pretrained model Resnet-50 from google drive  
 
 If you have download limit by google drive, you can also download styleGan2 pretrained model from baidu drive..., and down load the feature extractor pretrained model Resnet-50 from baidu drive...  
 
