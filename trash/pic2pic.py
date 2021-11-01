@@ -12,7 +12,7 @@ from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '4'
 
-cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+cfg = load_yaml('../arcface_tf2/configs/arc_res50.yaml')
 
 
 arcfacemodel = ArcFaceModel(size=cfg['input_size'],
@@ -26,7 +26,7 @@ if ckpt_path is not None:
     arcfacemodel.load_weights(ckpt_path)
 
 
-ckpt_dir_base = './official-converted'
+ckpt_dir_base = '../official-converted'
 ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 
 model = tf.saved_model.load('./models/step298000')

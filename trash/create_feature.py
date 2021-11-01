@@ -57,10 +57,10 @@ import pickle
 
 arcfacemodel = loadArcfaceModel()
 
-lfw_pairs_path = "./data/celeba_pairs"
+lfw_pairs_path = "../data/celeba_pairs"
 names_list = os.listdir(lfw_pairs_path)
 
-lfw_feature_path = "./data/celeba_feature_pairs"
+lfw_feature_path = "../data/celeba_feature_pairs"
 
 for name in names_list:
     img_path = os.path.join(lfw_pairs_path, name)

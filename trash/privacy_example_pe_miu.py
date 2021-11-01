@@ -9,7 +9,7 @@
 
 import numpy as np
 
-from privacy_enhancing_miu import PrivacyEnhancingMIU
+from trash.privacy_enhancing_miu import PrivacyEnhancingMIU
 
 
 # Load data

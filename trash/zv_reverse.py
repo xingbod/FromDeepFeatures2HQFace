@@ -12,7 +12,7 @@ from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
-cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+cfg = load_yaml('../arcface_tf2/configs/arc_res50.yaml')
 
 
 arcfacemodel = ArcFaceModel(size=cfg['input_size'],
@@ -53,7 +53,7 @@ class myModel(tf.keras.Model):
 
 
 
-ckpt_dir_base = './official-converted'
+ckpt_dir_base = '../official-converted'
 ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 ckpt_dir_ref = os.path.join(ckpt_dir_base, 'ref')
 

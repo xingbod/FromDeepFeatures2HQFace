@@ -14,7 +14,7 @@ from stylegan2.utils import postprocess_images
 import time
 from shutil import copy
 import random
-from privacy_enhancing_miu import PrivacyEnhancingMIU
+from trash.privacy_enhancing_miu import PrivacyEnhancingMIU
 
 pemiu = PrivacyEnhancingMIU(block_size=32)
 
@@ -35,7 +35,7 @@ pre_loss = 0.0
 num = 0
 for num_repeat in range(50):
 
-    dir = "./data/lfw_select"
+    dir = "../data/lfw_select"
     save_dir = './data/outputs/lfw_results_xb'
     dirs_name = os.listdir("./data/lfw_select")  # 人名文件夹列表
 

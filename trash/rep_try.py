@@ -11,7 +11,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 import pickle
 import numpy as np
 import tqdm
-from ZVDatasets import ZVDatasets
+from trash.ZVDatasets import ZVDatasets
 allow_memory_growth()
 
 big_batch_size = 500000
@@ -24,7 +24,7 @@ def creatZvPairs():
         arcfacemodel = loadArcfaceModel()
 
     with tf.device('/gpu:0'):
-        ckpt_dir_base = './official-converted'
+        ckpt_dir_base = '../official-converted'
         ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
         g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
 

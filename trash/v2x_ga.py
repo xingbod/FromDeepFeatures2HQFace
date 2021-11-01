@@ -107,7 +107,7 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 for num_repeat in range(5):
 
-    dir = "./data/colorferet_jpg_crop"
+    dir = "../data/colorferet_jpg_crop"
     save_dir = './data/colorferet_results'
     dirs_name = os.listdir(dir)  # 人名文件夹列表
 

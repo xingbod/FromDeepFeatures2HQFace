@@ -26,7 +26,7 @@ from tensorflow.python.client import device_lib
 
 print(device_lib.list_local_devices())
 
-cfg = load_yaml('./arcface_tf2/configs/arc_res50.yaml')
+cfg = load_yaml('../arcface_tf2/configs/arc_res50.yaml')
 
 model = ArcFaceModel(size=cfg['input_size'],
                          backbone_type=cfg['backbone_type'],
@@ -75,7 +75,7 @@ def main():
 
     allow_memory_growth()
     # common variables
-    ckpt_dir_base = './official-converted'
+    ckpt_dir_base = '../official-converted'
 
     # saving phase
     # for use_custom_cuda in [False]:

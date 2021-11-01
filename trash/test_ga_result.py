@@ -57,7 +57,7 @@ num_children = pop_size - num_parents
 
 arcfacemodel = loadArcfaceModel()
 
-ckpt_dir_base = './official-converted'
+ckpt_dir_base = '../official-converted'
 ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
 g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
 

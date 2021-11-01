@@ -38,8 +38,8 @@ def main(_):
 	allow_memory_growth()
 	# dataset para.
 	if FLAGS.dataset == 'lfw':
-		dir_source = "./data/lfw_select"
-		save_dir = './data/lfw_results'
+		dir_source = "../data/lfw_select"
+		save_dir = '../data/lfw_results'
 		if not os.path.exists(save_dir):
 			os.mkdir(save_dir)
 		dirs_name = os.listdir(dir_source)  # 人名文件夹列表

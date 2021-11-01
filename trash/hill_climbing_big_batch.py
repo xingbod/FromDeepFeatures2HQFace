@@ -54,7 +54,7 @@ with tf.device('/gpu:1'):
 
 # Create ground truth
 # truth = np.sin(2 * np.pi * (np.arange(features, dtype=np.float32)) / features)
-input_dir = "data/imgs"
+input_dir = "../data/imgs"
 input_img_paths = sorted(
     [
         os.path.join(input_dir, fname)

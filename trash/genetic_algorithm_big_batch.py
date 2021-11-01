@@ -26,6 +26,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.python.framework import ops
+import tqdm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # os.environ['TF_CPP_MIN_LOG_LEVEL']='3'# 只显示 Error
@@ -36,10 +37,27 @@ from skimage.transform import rescale, resize, downscale_local_mean
 from tensorflow.keras import Model, optimizers, layers, losses
 from ModelZoo import loadFaceModel, loadStyleGAN2Model,createlatent2featureModel,createlatent2featureModelfake, laten2featureFinalModel
 from PIL import Image
+from stylegan2.utils import postprocess_images
+from load_models import load_generator
+from copy_official_weights import convert_official_weights_together
 
+
+##here we load generator
+from tf_utils import allow_memory_growth
+
+allow_memory_growth()
+
+# common variables
+ckpt_dir_base = '../official-converted'
+# inference phase
+ckpt_dir_cuda = os.path.join(ckpt_dir_base, 'cuda')
+g_clone = load_generator(g_params=None, is_g_clone=True, ckpt_dir=ckpt_dir_cuda, custom_cuda=False)
+seed = 6600
 
 # Genetic Algorithm Parameters
-pop_size = 32      # 种群大小
+big_batch_size = 20
+one_batch_size = 16
+pop_size = one_batch_size * big_batch_size     # 种群大小
 features = 512      # 个体大小
 selection = 0.2     # 筛选前20
 mutation = 1. / pop_size
@@ -50,7 +68,7 @@ num_children = pop_size - num_parents
 
 # Create ground truth
 # truth = np.sin(2 * np.pi * (np.arange(features, dtype=np.float32)) / features)
-input_dir = "data/imgs"
+input_dir = "../data/imgs"
 input_img_paths = sorted(
     [
         os.path.join(input_dir, fname)
@@ -74,17 +92,25 @@ truth = feat_gt
 
 
 # Initialize population array
+# population = np.random.randn(pop_size, features)
 population = tf.Variable(np.random.randn(pop_size, features), dtype=tf.float32)
 # Initialize placeholders
 truth_ph = truth
-model = laten2featureFinalModel()
-print(model.summary())
+
 
 def GAalgo(population,crossover_mat_ph,mutation_val_ph):
     # Calculate fitness (MSE)
     # population -> v
     # print("xxxx*******1",population)
-    feature_new, image_out = model(population)
+    feature_new = np.zeros((pop_size,512))
+    image_out = np.zeros((pop_size,1024,1024,3))
+    for batch in tqdm.tqdm(range(big_batch_size)):
+        input = population[batch*one_batch_size:(batch+1)*one_batch_size,:]# tf.Variable(np.random.randn(32, features), dtype=tf.float32)
+        image_out_g = g_clone([input, []], training=False, truncation_psi=0.5)
+        image_out_g = postprocess_images(image_out_g)
+        # pay attention to the slice index number
+        image_out[batch*one_batch_size:(batch + 1) * one_batch_size, :, :, :] = image_out_g.numpy()
+        feature_new[batch*one_batch_size:(batch+1)*one_batch_size,:] = arcfacemodel(tf.image.resize(image_out_g.numpy() , size=(112, 112)) / 255.)
     # print("xxxx*******2")
     fitness = -tf.reduce_mean(tf.square(tf.subtract(feature_new, truth_ph)), 1)
     result = tf.math.top_k(fitness, k=pop_size)
@@ -150,7 +176,7 @@ for i in range(generations):
     # print(image_out)
     # if i % 5 == 0:
     Image.fromarray(image_out, 'RGB').save(
-            'data/test13/out_' + str(i) + '.png')
+            'data/test18/out_' + str(i) + '.png')
     tau = 0.6
     tau_bond = 0.2
     # pay attention to fitness neg.
@@ -159,7 +185,7 @@ for i in range(generations):
     # *************************1.0********
     mutation = 3/pop_size + (tf.reduce_mean(-fitness) - tau)/pop_size
     # here we adjuect scale based on the loss history
-    mutation = mutation.numpy() * (loss_history[i+1]-loss_history[i])
+    # mutation = mutation.numpy() * (loss_history[i+1]-loss_history[i])
     if i % 5 == 0:
         best_fit = tf.reduce_min(fitness)
         print('Generation: {},mutation rate: {}, Best Fitness (lowest MSE): {:.2}'.format(i,mutation, -best_fit))

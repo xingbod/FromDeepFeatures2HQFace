@@ -22,7 +22,7 @@ from load_models import load_generator
 import time
 import random
 import tqdm
-from privacy_enhancing_miu import PrivacyEnhancingMIU
+from trash.privacy_enhancing_miu import PrivacyEnhancingMIU
 # PrivacyEnhancing with MIU
 pemiu = PrivacyEnhancingMIU(block_size=256)
 
@@ -119,8 +119,8 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 for num_repeat in range(5):
 
-    dir = "./data/lfw_select"
-    save_dir = './data/lfw_results'
+    dir = "../data/lfw_select"
+    save_dir = '../data/lfw_results'
     dirs_name = os.listdir(dir)  # 人名文件夹列表
 
 

@@ -23,7 +23,7 @@ jpg_save_path = './data/colorferet_jpg'
 
 # resize the colorferet jpg img
 people_name_list_jpg = os.listdir(jpg_save_path)
-jpg_crop_save_path = './data/colorferet_jpg_crop'
+jpg_crop_save_path = '../data/colorferet_jpg_crop'
 detector = MTCNN()
 for people_name in tqdm.tqdm(people_name_list_jpg):
     img_source_path = os.path.join(jpg_save_path, people_name)

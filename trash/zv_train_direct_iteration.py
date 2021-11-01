@@ -31,7 +31,7 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
 
 # 1st step, extract features from the images based on arcface model
-input_dir = "data/imgs"
+input_dir = "../data/imgs"
 input_img_paths = sorted(
     [
         os.path.join(input_dir, fname)
