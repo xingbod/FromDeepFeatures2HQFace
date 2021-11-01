@@ -33,7 +33,7 @@ def main():
     allow_memory_growth()
 
     # common variables
-    ckpt_dir_base = './official-converted'
+    ckpt_dir_base = '../official-converted'
 
     # saving phase
     for use_custom_cuda in [False]:

@@ -36,7 +36,7 @@ allow_memory_growth()
 # arcfacemodel = loadArcfaceModel()
 arcfacemodel = loadArcfaceModel_inception()
 print(arcfacemodel.summary())
-lfw_pairs_path = "./data/colorferet_jpg_crop"
+lfw_pairs_path = "../data/colorferet_jpg_crop"
 names_list = os.listdir(lfw_pairs_path)
 
 lfw_feature_path = "./data/colorferet_158_features_Inception"
