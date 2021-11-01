@@ -4,7 +4,7 @@ this is a tensorflow implementation of the paper " Reconstructing High-Quality F
 
 <img src="https://github.com/charlesLucky/auto_decoder_encoder_tf_2/blob/main/data/reconstruction.png" >  
 
-
+<img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/demo.gif">
 ## Requirements  
 
 Before running the program, make sure that there are dependent packages required by the program in your environment：python3, tensorflow2, numpy, shutil...  
