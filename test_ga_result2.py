@@ -105,20 +105,20 @@ def GAalgo(population,crossover_mat_ph,mutation_val_ph):
 
 
 
-for num_repeat in range(1):
+for num_repeat in range(3):
 
-    dir = "./data/lfw_select"
-    save_dir = './data/lfw_results'
+    dir = "./data/source_img"
+    save_dir = './data/results'
     dirs_name = os.listdir(dir)  # 人名文件夹列表
 
 
     for name in dirs_name:
         dir_path = os.path.join(dir, name)  # 人名目录
 
-        if not os.path.exists(save_dir + f"/result{num_repeat+4}"):
-            os.mkdir(save_dir + f"/result{num_repeat+4}")
+        if not os.path.exists(save_dir + f"/result{num_repeat}"):
+            os.mkdir(save_dir + f"/result{num_repeat}")
 
-        the_img_savepath = save_dir + f"/result{num_repeat+4}/{name}"
+        the_img_savepath = save_dir + f"/result{num_repeat}/{name}"
         if not os.path.exists(the_img_savepath):
             os.mkdir(the_img_savepath)
 
