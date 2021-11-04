@@ -3,7 +3,7 @@
 this is a tensorflow implementation of the paper " Reconstructing High-Quality Face Image from Deep Features "  
 
 <img src="https://github.com/charlesLucky/auto_decoder_encoder_tf_2/blob/main/data/reconstruction.png" >  
-
+<center class="half">
 <img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/demo.gif">                     <img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/demo2%20(1)%20(1).gif">
 
 ## Requirements  
