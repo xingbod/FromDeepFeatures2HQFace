@@ -184,7 +184,7 @@ for num_repeat in range(3):
                                                                                                             -best_fit))
             if i % 5 == 0:
                 Image.fromarray(image_out, 'RGB').save(
-                    the_img_savepath + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
+                    save_path + r'/out_' + str(i) + "_" + str(format(best_fit_numpy, '.2f')) + '.png')
             new_fit = -best_fit
             if new_fit >= pre_fit:
                 num = num + 1
