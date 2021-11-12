@@ -8,7 +8,7 @@ from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input, Dropout, BatchNormalization, LeakyReLU, concatenate,Dense,Flatten
-from trash.bicubic_downsample import build_filter, apply_bicubic_downsample
+
 
 def regressionModel():
     inputs = Input((512))
