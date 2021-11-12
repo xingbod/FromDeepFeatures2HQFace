@@ -21,9 +21,9 @@ Before running the program, make sure that there are dependent packages required
 
 ## Pretrained Models  
 
-You can download [styleGan2 pretrained model](https://drive.google.com/drive/folders/1CfeLX2ckWq9NJwm8M0B00_hBdze7NOWq?usp=sharing) from google drive, and down load the feature extractor [pretrained model Resnet-50](https://drive.google.com/drive/folders/1lgBv19VKILyVYrmaLBEpFV5UKJEkilc8?usp=sharing) from google drive  
+You can download [styleGan2 pretrained model](https://drive.google.com/drive/folders/1CfeLX2ckWq9NJwm8M0B00_hBdze7NOWq?usp=sharing) from google drive then put it in folder ‘official-converted’, and down load the feature extractor [pretrained model Resnet-50](https://drive.google.com/drive/folders/1lgBv19VKILyVYrmaLBEpFV5UKJEkilc8?usp=sharing) from google drive then put it in folder ‘arcface-tf2’ 
 
-If you have download limit by google drive, you can also download [styleGan2 pretrained model](https://pan.baidu.com/s/1vOD1gmO5T2aL-WL0ZkgWMg) from baidu drive（Extraction code is cons）, and down load the feature extractor [pretrained model Resnet-50](https://pan.baidu.com/s/1X_7-uxwXX2XRP6JOASOC8g) from baidu drive(Extraction code is cons)
+If you have download limit by google drive, you can also download [styleGan2 pretrained model](https://pan.baidu.com/s/1vOD1gmO5T2aL-WL0ZkgWMg) from baidu drive（Extraction code is cons）then put it in folder ‘official-converted’, and down load the feature extractor [pretrained model Resnet-50](https://pan.baidu.com/s/1X_7-uxwXX2XRP6JOASOC8g) from baidu drive(Extraction code is cons) then put it in folder ‘arcface-tf2’
 
 
 ##  Usage（Test with our images）：  
