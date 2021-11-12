@@ -2,6 +2,13 @@
 
 this is a tensorflow implementation of the paper " Reconstructing High-Quality Face Image from Deep Features "  
 
+## Abstract
+  Face recognition based on the deep convolutional neural networks (CNN) shows superior accuracy performance attributed to the high discriminative features extracted. Yet, the security and privacy of the extracted features from deep learning models (deep features) have been overlooked, especially reconstructing the high-quality face images from the deep features for malicious activities. In this paper, we formulate the reconstruction of high-quality face images from deep features as a constrained optimization problem. Such optimization aims to minimize the distance between the features extracted from the original face image and the reconstructed high-quality face image. Instead of directly solving the optimization problem in the image space, we reformulate and relax the problem into looking for a latent vector of a GAN generator, then use it to generate the face image. The GAN generator serves a dual role in the proposed framework, i.e., face distribution constraint of the optimization goal and a high-quality face generator. On top of the optimization task, we also propose an attack pipeline to impersonate the target user based on the generated face image. Our results show that the generated face images can achieve a TAR of 98.0\% on LFW under type-I attacks @ FAR of 0.1\%. Our work sheds light on the biometric deployment to meet the privacy-preserving and security policies.
+
+## Work flow
+<img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/workflow2.png">
+
+## Partial work result
 <img src="https://github.com/charlesLucky/auto_decoder_encoder_tf_2/blob/main/data/reconstruction.png" >  
 
 <img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/demo.gif"><img src = "https://github.com/charlesLucky/FromDeepFeatures2HQFace/blob/main/data/demo2%20(1)%20(1).gif">
