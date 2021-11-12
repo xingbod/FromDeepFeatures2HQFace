@@ -16,6 +16,7 @@ this is a tensorflow implementation of the paper " Reconstructing High-Quality F
 ## Requirements  
 
 Before running the program, make sure that there are dependent packages required by the program in your environment：python3, tensorflow2, numpy, shutil...  
+When we do this work, the GPU we use is rtx3090,  so if you wang to run these programs， we suggest you also use rtx3090
 
 
 
