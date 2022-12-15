@@ -27,6 +27,13 @@ You can download [styleGan2 pretrained model](https://drive.google.com/drive/fol
 If you have download limit by google drive, you can also download [styleGan2 pretrained model](https://pan.baidu.com/s/1vOD1gmO5T2aL-WL0ZkgWMg) from baidu drive（Extraction code is cons）then put it in folder ‘official-converted’, and down load the feature extractor [pretrained model Resnet-50](https://pan.baidu.com/s/1X_7-uxwXX2XRP6JOASOC8g) from baidu drive(Extraction code is cons) then put it in folder ‘arcface-tf2’
 
 
+All related models can be download from Baidu Drive:
+
+链接：https://pan.baidu.com/s/1KGYnLGzvw4FJBBWwVpqZmQ?pwd=ywug 
+
+提取码：ywug
+
+
 ##  Usage（Test with our images）：  
 
 step1.Download pretrained models：StyleGan2 and Resnet50  
